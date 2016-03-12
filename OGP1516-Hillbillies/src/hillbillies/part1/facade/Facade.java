@@ -93,7 +93,7 @@ public class Facade implements IFacade {
 	}
 	
 	public void moveToAdjacent(Unit unit, int dx, int dy, int dz) throws ModelException {
-	//	unit.moveToAdjacent(new double[] {dx, dy, dz});
+		unit.moveToAdjacent(dx, dy, dz);
 	}
 	
 	public double getCurrentSpeed(Unit unit) throws ModelException {

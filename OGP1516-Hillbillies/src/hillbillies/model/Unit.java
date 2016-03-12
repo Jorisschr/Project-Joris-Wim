@@ -1,6 +1,7 @@
 package hillbillies.model;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 import be.kuleuven.cs.som.annotate.Basic;
 import be.kuleuven.cs.som.annotate.Immutable;
@@ -54,7 +55,7 @@ public class Unit {
 				int strength, int toughness, boolean enableDefaultBehavior) 
 					throws OutOfBoundsException, IllegalArgumentException {
 		
-		double[] pos = {(double) position[0], (double) position[1], (double) position[2]};	
+		double[] pos = {(double) position[0] + 0.5, (double) position[1] + 0.5, (double) position[2] + 0.5};	
 		if (!isValidPosition(pos)) {
 			//display message?
 			throw new OutOfBoundsException(pos);
@@ -100,13 +101,15 @@ public class Unit {
 		this.stamina = getMaxHitpoints();
 		this.hitpoints = getMaxHitpoints();
 		this.interrupted = false;
-		this.movement = "Still";
+		this.movement = "Walking";
 		this.enableDefaultBehavior = enableDefaultBehavior;
 		this.status = "Idle";
-		this.speed = new double[] {0, 0, 0};
+		this.speed = 0;
+		this.velocity = new double[] {0, 0, 0};
 		this.activityProgress = 0;
 		this.timeNeeded = 0;
-		this.destination = new double[] {0, 0, 0};
+		this.destination = new int[] {0, 0, 0};
+		this.nextPosition = new double[] {0.5, 0.5, 0.5};
 		
 	}
 	
@@ -180,13 +183,17 @@ public class Unit {
 	 */
 	private boolean enableDefaultBehavior;
 	
-	private double[] speed;
+	private double speed;
+	
+	private double[] velocity;
 	
 	private double activityProgress;
 	
 	private double timeNeeded;
 	
-	private double[] destination;
+	private int[] destination;
+	
+	private double[] nextPosition;
 	
 	/**
 	 * Variable registering the lower bound for the x, y and z
@@ -473,18 +480,31 @@ public class Unit {
 		return 0;
 	}
 	
-	public double[] getSpeed() {
+	public double getCurrentSpeed() {
 		return this.speed;
 	}
 	
-	public void setSpeed(double[] speed) {		
-		this.speed = speed;
+	public void setSpeed(int z) {	
+		double basevel = 0.75 * (this.getStrength() + this.getAgility()) / this.getWeight();	
+		double walkvel;
+
+		if (z > 0) {
+			walkvel = 1.2 * basevel;
+		}
+		else if (z < 0) {
+			walkvel = 0.5 * basevel;
+		}
+		else {
+			walkvel = basevel;
+		}
+		
+		if (this.isSprinting()) {
+			walkvel = walkvel * 2;
+		}
+		this.speed = walkvel;
 	}
 	
-	public double getCurrentSpeed() {
-		
-		return Math.sqrt(Math.pow(speed[0],2) + Math.pow(speed[1], 2) + Math.pow(speed[2], 2));
-	}
+	
 
 	private void setHitpoints(int hitpoints){
 		if ((hitpoints >= getMinHitpoints()) && (hitpoints <= this.getMaxHitpoints())) {
@@ -542,12 +562,111 @@ public class Unit {
 		this.activityProgress = progress;
 	}
 	
-	public double[] getDestination() {
+	public int[] getDestination() {
 		return this.destination;
 	}
 	
-	public void setDestination(double[] destination) {
+	public void setDestination(int[] destination) {
 		this.destination = destination;
+	}
+
+	/**
+	 * Return the time needed for a unit to complete an activity.
+	 */
+	public double getTimeNeeded() {
+		return this.timeNeeded;
+	}
+
+	/**
+	 * Calculate the total time needed for a unit to finish its activity.
+	 * 
+	 * @param 	status
+	 * 			The status of this unit.
+	 */
+	public void setTimeNeeded(String status) {
+		if (status == "Working")
+			this.timeNeeded = 500 / this.getStrength();
+			
+		if ((status == "Resting") || (status == "InitResting"))
+			this.timeNeeded = (0.2 * 200 / this.getToughness()) ;		
+	}
+
+	public double getCounter(){
+		return this.counter;
+	}
+
+	/*public void advanceTime() throws InterruptedException {
+		
+		if ((this.getCounter() >= REST_INTERVAL) && (this.getStatus() != "Resting")) {
+			this.setCounter(0);
+			this.rest();
+			return;
+		}
+		
+		this.setCounter(this.getCounter() + duration);
+		
+		long durationM = (long) (1000 * duration);
+		if (this.getStatus() == "Fighting"){
+			try {
+				wait(durationM);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}	
+		}
+		
+		if (this.getStatus() == "Moving"){
+			
+			double[] speed = this.getSpeed();
+			try {
+				wait (durationM);
+				double[] oldPos = this.getPosition();				
+				double[] newPos = { oldPos[0] + (duration * speed[0]),
+						    		oldPos[1] + (duration * speed[1]),
+						    		oldPos[2] + (duration * speed[2]) };
+				if (this.isSprinting())
+					this.setStamina(this.getStamina() - 1);
+					if (this.getStamina() == 0)
+						this.stopSprinting();
+				if (isValidPosition(newPos))
+					this.setPosition(newPos);
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				throw new InterruptedException();
+			}
+			
+			}
+		
+		
+		if (this.getStatus() == "Working"){
+			try {
+				wait(durationM);
+			} catch (InterruptedException e) {
+				throw new InterruptedException();
+			}
+	
+		}
+		
+		if(this.getStatus()== "Resting"){
+			try {
+				wait(durationM);
+			} catch (InterruptedException e) {
+				throw new InterruptedException();
+			}
+			
+		}
+	}*/
+	
+	private void setCounter(double time){
+		this.counter = time;
+	}
+	
+	public double[] getNextPosition() {
+		return this.nextPosition;
+	}
+	
+	public void setNextPosition(double[] nextPosition) {
+		this.nextPosition = nextPosition;
 	}
 
 	public static String getRandomActivity(String[] activities) {
@@ -555,6 +674,46 @@ public class Unit {
 	    return activities[rnd];
 	}
 	
+	/**
+	 * Return the velocity of a Unit.
+	 */
+	public double[] getVelocity(){	
+		return this.velocity;	
+	}
+	
+	/**
+	 *  Set the velocity of a unit.
+	 */
+	public void setVelocity(double[] velocity) {
+		this.velocity = velocity;
+	}
+	
+	/**
+	 * Calculate the velocity of a unit.
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return
+	 */
+	public double[] calcVelocity(int x, int y, int z) {
+		double d = calcDistance(x, y, z);
+		double curSpeed = this.getCurrentSpeed();
+		double[] velocity = { curSpeed * x / d,
+								curSpeed * y / d,
+								curSpeed * z / d};		
+		return velocity;
+	}
+
+	/**
+	 * Calculate the distance between two points in the game world.
+	 * @throws	OutOfBoundsException
+	 * 			The given position is out of bounds.
+	 * 			| ! isValidPosition(position)
+	 */
+	public double calcDistance(int x, int y, int z) {
+		return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+	}
+
 	public void attack(Unit defender){
 		float attackerOr = (float)Math.atan2(defender.getPosition()[1]-this.getPosition()[1],defender.getPosition()[0]-this.getPosition()[0]);
 		float defenderOr = (float)Math.atan2(this.getPosition()[1]-defender.getPosition()[1],this.getPosition()[0]-defender.getPosition()[0]);
@@ -670,13 +829,13 @@ public class Unit {
 			throw new IllegalArgumentException();
 		}
 		
-		wait((long) dt * 1000);
+		TimeUnit.MILLISECONDS.sleep((long) dt * 1000);
 		this.setCounter(this.getCounter() + dt);
 
 		
 		if (this.getCounter() >= REST_INTERVAL) {
-			this.setCounter(0);
 			this.rest();
+			this.setCounter(0);
 		}	
 		if (this.isIdle()) {
 			if (this.isDefaultBehaviorEnabled()) {
@@ -687,9 +846,15 @@ public class Unit {
 			return;
 		}
 		else if (this.isMoving()) {
-			// update position
-			// check with destination
-			// if not moving, destination set to default
+			this.updatePosition(dt);
+			if (this.getPosition() == this.getNextPosition()) {
+				if (this.getCube() == this.getDestination()) {
+					this.setStatus("Idle");
+				}
+				else {
+					this.moveTo(this.getDestination());
+				}
+			}
 		}		
 		else if ((this.isInitResting()) || (this.isResting())) {		
 			this.setActivityProgress(this.getActivityProgress() + dt);
@@ -713,100 +878,6 @@ public class Unit {
 		}			
 	}
 	
-	public void updatePosition() {
-		
-	}
-	
-	/**
-	 * Return the time needed for a unit to complete an activity.
-	 */
-	public double getTimeNeeded() {
-		return this.timeNeeded;
-	}
-	
-	/**
-	 * Calculate the total time needed for a unit to finish its activity.
-	 * 
-	 * @param 	status
-	 * 			The status of this unit.
-	 */
-	public void setTimeNeeded(String status) {
-		if (status == "Working")
-			this.timeNeeded = 500 / this.getStrength();
-			
-		if ((status == "Resting") || (status == "InitResting"))
-			this.timeNeeded = (0.2 * 200 / this.getToughness()) ;		
-	}
-	
-	
-	/*public void advanceTime() throws InterruptedException {
-		
-		if ((this.getCounter() >= REST_INTERVAL) && (this.getStatus() != "Resting")) {
-			this.setCounter(0);
-			this.rest();
-			return;
-		}
-		
-		this.setCounter(this.getCounter() + duration);
-		
-		long durationM = (long) (1000 * duration);
-		if (this.getStatus() == "Fighting"){
-			try {
-				wait(durationM);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}	
-		}
-		
-		if (this.getStatus() == "Moving"){
-			
-			double[] speed = this.getSpeed();
-			try {
-				wait (durationM);
-				double[] oldPos = this.getPosition();				
-				double[] newPos = { oldPos[0] + (duration * speed[0]),
-						    		oldPos[1] + (duration * speed[1]),
-						    		oldPos[2] + (duration * speed[2]) };
-				if (this.isSprinting())
-					this.setStamina(this.getStamina() - 1);
-					if (this.getStamina() == 0)
-						this.stopSprinting();
-				if (isValidPosition(newPos))
-					this.setPosition(newPos);
-				
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				throw new InterruptedException();
-			}
-			
-			}
-		
-		
-		if (this.getStatus() == "Working"){
-			try {
-				wait(durationM);
-			} catch (InterruptedException e) {
-				throw new InterruptedException();
-			}
-
-		}
-		
-		if(this.getStatus()== "Resting"){
-			try {
-				wait(durationM);
-			} catch (InterruptedException e) {
-				throw new InterruptedException();
-			}
-			
-		}
-	}*/
-	
-	private void setCounter(double time){
-		this.counter = time;
-	}
-	public double getCounter(){
-		return this.counter;
-	}
 	/**
 	 * Constant reflecting the length of any side of a cube of the game world.
 	 * 
@@ -814,49 +885,6 @@ public class Unit {
 	 * 			| result == 1
 	 */
 	public static final int CUBE_LENGTH = 1;
-	
-	/**
-	 * Calculate the velocity of a Unit.
-	 */
-	public double[] getVelocity(double[] startPos,double[] targetPos){
-		
-		double basevel = 0.75*(this.getStrength()+this.getAgility())/this.getWeight();	
-		double walkvel;
-
-		if (startPos[2]-targetPos[2] > 0)
-			walkvel = 1.2*basevel;
-		else if (startPos[2]-targetPos[2] < 0)
-			walkvel = 0.5*basevel;
-		else
-			walkvel = basevel;
-		
-		double sprintvel = 2 * walkvel;
-		
-		double dis = calcDistance(startPos,targetPos);
-		double [] velocity = {(targetPos[0]-startPos[0])/dis,
-								(targetPos[0]-startPos[0])/dis,
-								(targetPos[0]-startPos[0])/dis};
-		
-		if (this.isSprinting())
-			for (int i=0; i < velocity.length; i++)
-				velocity[i] = velocity[i] * sprintvel;
-		else
-			for (int i=0; i < velocity.length; i++)
-				velocity[i]= velocity[i] * walkvel;
-		return velocity;
-	}
-	
-	/**
-	 * Calculate the distance between two points in the game world.
-	 * @throws	OutOfBoundsException
-	 * 			The given position is out of bounds.
-	 * 			| ! isValidPosition(position)
-	 */
-	public double calcDistance(double[] start, double[] end) {		
-		return Math.sqrt(Math.pow(end[0] - start[0],2) + 
-							Math.pow(end[1]-start[1],2) + 
-							Math.pow(end[2]-start[2],2));
-	}
 	
 	/**
 	 * Check whether the given duration is a valid duration to advance the time.
@@ -873,50 +901,70 @@ public class Unit {
 		return true;
 	}
 	
+	public void updatePosition(double dt) {
+		double[] oldPos = this.getPosition();
+		double[] velocity = this.getVelocity();
+		double[] newPos = { oldPos[0] + dt * velocity[0],
+							oldPos[1] + dt * velocity[1],
+							oldPos[2] + dt * velocity[2]};
+		
+		if (this.destinationReached(newPos, this.getNextPosition())) {
+			this.setPosition(this.getNextPosition());
+		}
+		else {
+			this.setPosition(newPos);
+		}
+	}
+	
+	/**
+	 * Initiate a more complex movement from the unit's current position to another
+	 * arbitrary cube of the game world.
+	 * @param 	destination
+	 * 			The new location to which the unit has to move.
+	 */
+	public void moveTo(int[] location){
+		if (this.canBeInterrupted("Moving"))
+			this.setStatus("Moving");
+			this.setDestination(location);
+			
+			int[] nextPos = new int [3];
+			
+			for (int i = 0; i < 3; i++) {
+				
+				if (this.getCube()[i] == location[i]) {
+					nextPos[i] = 0;
+				}
+				else if (this.getCube()[i] < location[i]) {
+					nextPos[i] = 1;
+				}
+				else {
+					nextPos[i] = -1;
+				}
+			}
+			this.moveToAdjacent(nextPos[0], nextPos[1], nextPos[2]);
+	}
+	
 	/**
 	 * Initiate movement to a game world cube adjacent to the unit's current location.
 	 * 
 	 * @param 	targetPos
 	 * 			The adjacent cube to which this unit has to move.
 	 */
-	public void moveToAdjacent(double[] targetPos, double[] speed) throws InterruptedException{
+	public void moveToAdjacent(int x, int y, int z) {
 		if (this.canBeInterrupted("Moving")) {
-			Thread.currentThread().interrupt();
-			float vy = (float) speed[1];
-			float vx = (float) speed[0];
+			this.setStatus("Moving");
+			
+			this.setSpeed(z);
+			this.setVelocity(this.calcVelocity(x, y, z));
+			
+			float vy = (float) this.getVelocity()[1];
+			float vx = (float) this.getVelocity()[0];
 			this.setOrientation((float) Math.atan2(vy, vx));
-			this.setSpeed(speed);
 			
-			double[] pos = this.getPosition();
-			double[] destination = {pos[0] + targetPos[0], 
-									pos[1] + targetPos[1], 
-									pos[2] + targetPos[2]};
-			
-			while (this.getPosition() != destination)
-				try {
-					this.advanceTime(0.1);
-
-					if (this.destinationReached(this.getPosition(), destination))
-						this.setPosition(destination);
-					
-				} catch (InterruptedException e) {
-					if (this.isFighting())
-						throw new InterruptedException();
-					else
-						try {
-							this.setInterruption(true);
-							this.advanceTime(0.1);
-							if (this.destinationReached(this.getPosition(), targetPos))
-								this.setPosition(targetPos);
-
-						} catch (InterruptedException e1) {
-							if (this.isFighting())
-								throw new InterruptedException();
-							else
-								return;
-						}
-				}
-			this.setSpeed(new double[] {0, 0, 0});
+			double[] oldPos = this.getPosition();
+			this.setNextPosition(new double[] {oldPos[0] + x + 0.5, 
+												oldPos[1] + y + 0.5, 
+												oldPos[2] + z + 0.5});
 		}
 	}
 	
@@ -938,83 +986,20 @@ public class Unit {
 	}
 	
 	public boolean destinationReached(double[] newPos, double[] target) {
-		double[] oldPos = this.getPosition();
-		if ((intervalContains(0.5, oldPos[0], newPos[0])) &&
-				(intervalContains(0.5, oldPos[1], newPos[1])) &&
-				(intervalContains(0.5, oldPos[2], newPos[2])) &&
-				(this.getCube(target) == this.getCube(newPos)))
-			
+		double[] velocity = this.getVelocity();
+		
+		if (this.getCube(newPos) == this.getCube(target)) {
+			for (int i = 0; i < 3; i++) {
+				if ((velocity[i] < 0) && (newPos[i] > target[i])) {
+					return false;				
+				}
+				if ((velocity[i] > 0) && (newPos[i]) < target[i]) {
+					return false;
+				}
+			}
 			return true;
+		}
 		return false;
-	}
-	
-	/**
-	 * Initiate a more complex movement from the unit's current position to another
-	 * arbitrary cube of the game world.
-	 * @param 	destination
-	 * 			The new location to which the unit has to move.
-	 */
-	public void moveTo(int[] location){
-		if (this.canBeInterrupted("Moving"))
-			Thread.currentThread().interrupt();
-			
-			double[] destination = new double [3];
-			if (!isValidPosition(destination))
-				return;
-
-			for (int i = 0; i <3; i++)
-				destination[i] = (destination[i] + 0.5);
-			
-			while (this.getCurrentSpeed() > 0)
-				try {
-					wait((long) 50);
-				} catch (InterruptedException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
-				}
-			
-			this.setInterruption(false);
-			
-			double[] speed = new double[3];
-			double[] nextPos = new double[3];
-			
-			while (destination != this.getPosition())
-				speed = this.getVelocity(this.getPosition(), destination);
-
-				for (int i = 0; i < nextPos.length; i++) {
-						
-					if (this.getPosition()[i] == destination[i])
-						nextPos[i] = 0;
-					else if (this.position[i] < destination[i])
-						nextPos[i] = 1;
-					else
-						nextPos[i] = -1;
-					}
-					
-				try {
-					this.moveToAdjacent(nextPos, speed);
-				} catch (InterruptedException e) {
-					this.setStatus("Fighting");
-					while(this.isFighting())
-						try {
-							wait(200);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-					
-					try {
-						this.moveToAdjacent(nextPos, speed);
-					} catch (InterruptedException e1) {
-						this.setStatus("Fighting");							
-					}
-					
-					if (this.isInterrupted() == true)
-						this.movement = "Still";
-						return;
-				}
-			
-			if (destination == this.getPosition())
-				this.setStatus("Default");
 	}
 	
 	public boolean isInterrupted() {
