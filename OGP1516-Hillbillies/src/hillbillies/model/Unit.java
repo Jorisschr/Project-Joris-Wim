@@ -110,7 +110,7 @@ public class Unit {
 		this.timeNeeded = 0;
 		this.destination = new int[] {0, 0, 0};
 		this.nextPosition = new double[] {0.5, 0.5, 0.5};
-		
+		this.opponent = null;
 	}
 	
 	/**
@@ -194,6 +194,9 @@ public class Unit {
 	private int[] destination;
 	
 	private double[] nextPosition;
+	
+	private Unit opponent;
+	
 	
 	/**
 	 * Variable registering the lower bound for the x, y and z
@@ -594,6 +597,68 @@ public class Unit {
 	public double getCounter(){
 		return this.counter;
 	}
+
+	/*public void advanceTime() throws InterruptedException {
+		
+		if ((this.getCounter() >= REST_INTERVAL) && (this.getStatus() != "Resting")) {
+			this.setCounter(0);
+			this.rest();
+			return;
+		}
+		
+		this.setCounter(this.getCounter() + duration);
+		
+		long durationM = (long) (1000 * duration);
+		if (this.getStatus() == "Fighting"){
+			try {
+				wait(durationM);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}	
+		}
+		
+		if (this.getStatus() == "Moving"){
+			
+			double[] speed = this.getSpeed();
+			try {
+				wait (durationM);
+				double[] oldPos = this.getPosition();				
+				double[] newPos = { oldPos[0] + (duration * speed[0]),
+						    		oldPos[1] + (duration * speed[1]),
+						    		oldPos[2] + (duration * speed[2]) };
+				if (this.isSprinting())
+					this.setStamina(this.getStamina() - 1);
+					if (this.getStamina() == 0)
+						this.stopSprinting();
+				if (isValidPosition(newPos))
+					this.setPosition(newPos);
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				throw new InterruptedException();
+			}
+			
+			}
+		
+		
+		if (this.getStatus() == "Working"){
+			try {
+				wait(durationM);
+			} catch (InterruptedException e) {
+				throw new InterruptedException();
+			}
+	
+		}
+		
+		if(this.getStatus()== "Resting"){
+			try {
+				wait(durationM);
+			} catch (InterruptedException e) {
+				throw new InterruptedException();
+			}
+			
+		}
+	}*/
 	
 	private void setCounter(double time){
 		this.counter = time;
@@ -653,19 +718,32 @@ public class Unit {
 	}
 
 	public void attack(Unit defender){
+		
 		float attackerOr = (float)Math.atan2(defender.getPosition()[1]-this.getPosition()[1],defender.getPosition()[0]-this.getPosition()[0]);
 		float defenderOr = (float)Math.atan2(this.getPosition()[1]-defender.getPosition()[1],this.getPosition()[0]-defender.getPosition()[0]);
-		
 		this.setOrientation(attackerOr);
 		defender.setOrientation(defenderOr);
 		
-		for(int i=1; i<5; i++)
-			try {
-				this.advanceTime(0.2);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		this.setActivityProgress(0);
+		defender.setActivityProgress(0);
+		
+		this.setStatus("Fighting");
+		defender.setStatus("Defending");
 
+		this.setOpponent(defender);
+		defender.setOpponent(this);
+	}
+	
+	public void setOpponent(Unit opponent){
+		this.opponent = opponent;
+	}
+	
+	private Unit getOpponent(){
+		return this.opponent;
+	}
+	
+	public void attackDone(){
+		Unit defender = this.getOpponent();
 		
 		double dodgeProb = 0.2*defender.getAgility()/this.getAgility();
 		boolean dodged = (new Random().nextDouble() <= dodgeProb);
@@ -697,6 +775,7 @@ public class Unit {
 				defender.setHitpoints((int) (curHealth-damage));
 			}
 		}
+		this.rest();
 	}
 	/**
 	 * This method will initiate resting.
@@ -767,7 +846,7 @@ public class Unit {
 			throw new IllegalArgumentException();
 		}
 		
-		TimeUnit.SECONDS.sleep((long) dt);
+		TimeUnit.MILLISECONDS.sleep((long) dt * 1000);
 		this.setCounter(this.getCounter() + dt);
 
 		
@@ -783,8 +862,8 @@ public class Unit {
 		if (this.isFighting()) {
 			return;
 		}
-		if (this.isMoving()) {
-			
+		else if (this.isMoving()) {
+			this.updatePosition(dt);
 			if (this.getPosition() == this.getNextPosition()) {
 				if (this.getCube() == this.getDestination()) {
 					this.setStatus("Idle");
@@ -793,9 +872,8 @@ public class Unit {
 					this.moveTo(this.getDestination());
 				}
 			}
-			this.updatePosition(dt);
 		}		
-		if ((this.isInitResting()) || (this.isResting())) {		
+		else if ((this.isInitResting()) || (this.isResting())) {		
 			this.setActivityProgress(this.getActivityProgress() + dt);
 			
 			if (this.getActivityProgress() >= this.getTimeNeeded()) {
@@ -804,7 +882,7 @@ public class Unit {
 				this.setActivityProgress(0);
 			}
 		}	
-		if (this.isWorking()) {
+		else if (this.isWorking()) {
 			// 'cast': if work isn't completed nothing happens, no progress is saved.
 			// gain 10 xp if work is finished and change game world.
 			this.setActivityProgress(this.getActivityProgress() + dt);
@@ -814,7 +892,18 @@ public class Unit {
 				this.setActivityProgress(0);
 				this.setStatus("Default");
 			}
-		}			
+		}
+		else if (this.isAttacking()){
+			Unit defender = this.getOpponent();
+			
+			double attacked = this.getActivityProgress();
+			this.setActivityProgress(attacked + dt);
+			defender.setActivityProgress(attacked + dt);
+			
+			if (this.getActivityProgress()>=1){
+				this.attackDone();
+			}
+		}
 	}
 	
 	/**
@@ -843,9 +932,9 @@ public class Unit {
 	public void updatePosition(double dt) {
 		double[] oldPos = this.getPosition();
 		double[] velocity = this.getVelocity();
-		double[] newPos = { oldPos[0] + (dt * velocity[0]),
-							oldPos[1] + (dt * velocity[1]),
-							oldPos[2] + (dt * velocity[2])};
+		double[] newPos = { oldPos[0] + dt * velocity[0],
+							oldPos[1] + dt * velocity[1],
+							oldPos[2] + dt * velocity[2]};
 		
 		if (this.destinationReached(newPos, this.getNextPosition())) {
 			this.setPosition(this.getNextPosition());
@@ -862,7 +951,7 @@ public class Unit {
 	 * 			The new location to which the unit has to move.
 	 */
 	public void moveTo(int[] location){
-		if (this.canBeInterrupted("Moving")) {
+		if (this.canBeInterrupted("Moving"))
 			this.setStatus("Moving");
 			this.setDestination(location);
 			
@@ -876,12 +965,11 @@ public class Unit {
 				else if (this.getCube()[i] < location[i]) {
 					nextPos[i] = 1;
 				}
-				else if (this.getCube()[i] > location[i]) {
+				else {
 					nextPos[i] = -1;
 				}
 			}
 			this.moveToAdjacent(nextPos[0], nextPos[1], nextPos[2]);
-		}
 	}
 	
 	/**
@@ -964,7 +1052,7 @@ public class Unit {
 	}
 	
 	public boolean isIdle() {
-		return this.getStatus() == "Idle";
+		return this.getStatus() == "Default";
 	}
 	
 	public boolean isMoving() {
@@ -975,6 +1063,13 @@ public class Unit {
 		return this.getStatus() == "Working";
 	}
 	
+	public boolean isAttacking(){
+		return this.getStatus() == "Attacking";
+	}
+	
+	public boolean isDefending(){
+		return this.getStatus() == "Defending";
+	}
 	public boolean isResting() {
 		return this.getStatus() == "Resting";
 	}
@@ -1032,24 +1127,21 @@ public class Unit {
 	 * 			The interruptor
 	 */
 	public boolean canBeInterrupted(String interruptor) {
-		if (this.isIdle()) {
+		if ((this.isWorking()) && (interruptor != "Working"))
 			return true;
-		}
-		if ((this.isWorking()) && (interruptor != "Working")) {
+		
+		if ((this.isResting()) && (interruptor != "Resting"))
 			return true;
-		}
-		if ((this.isResting()) && (interruptor != "Resting")){
+		
+		if ((this.isInitResting()) && (interruptor == "Fighting"))
 			return true;
-		}		
-		if ((this.isInitResting()) && (interruptor == "Fighting")) {
+		
+		if ((this.isMoving()) && (interruptor != "Working"))
 			return true;
-		}	
-		if ((this.isMoving()) && (interruptor != "Working")) {
+		
+		if (this.getStatus() == null)
 			return true;
-		}
-		if (this.getStatus() == null) {
-			return true;
-		}
+		
 		return false;
 	}
 }
