@@ -70,8 +70,8 @@ public class Part1TestPartial {
 		double time = distance / speed;
 		advanceTimeFor(facade, unit, time, 0.05);
 		assertDoublePositionEquals(2.5, 2.5, 2.5, facade.getPosition(unit));
-	}
 
+	}
 	/**
 	 * Helper method to advance time for the given unit by some time.
 	 * 
