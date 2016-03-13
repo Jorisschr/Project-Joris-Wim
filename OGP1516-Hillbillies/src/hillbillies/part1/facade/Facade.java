@@ -137,7 +137,7 @@ public class Facade implements IFacade {
 	}
 	
 	public boolean isAttacking(Unit unit) throws ModelException {
-		return unit.isFighting();
+		return unit.isAttacking();
 	}
 	
 	public void rest(Unit unit) throws ModelException {
