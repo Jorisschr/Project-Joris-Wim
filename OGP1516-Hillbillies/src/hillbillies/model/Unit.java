@@ -110,6 +110,7 @@ public class Unit {
 		this.timeNeeded = 0;
 		this.destination = new int[] {0, 0, 0};
 		this.nextPosition = new double[] {0.5, 0.5, 0.5};
+		this.movingTime = 0;
 		
 	}
 	
@@ -194,6 +195,8 @@ public class Unit {
 	private int[] destination;
 	
 	private double[] nextPosition;
+	
+	private double movingTime;
 	
 	/**
 	 * Variable registering the lower bound for the x, y and z
@@ -504,8 +507,10 @@ public class Unit {
 		this.speed = walkvel;
 	}
 	
+	public void stopWalking() {
+		this.speed = 0.0;
+	}
 	
-
 	private void setHitpoints(int hitpoints){
 		if ((hitpoints >= getMinHitpoints()) && (hitpoints <= this.getMaxHitpoints())) {
 			this.hitpoints = hitpoints;
@@ -590,6 +595,10 @@ public class Unit {
 		if ((status == "Resting") || (status == "InitResting"))
 			this.timeNeeded = (0.2 * 200 / this.getToughness()) ;		
 	}
+	
+	public void setTimeNeeded(double time) {
+		this.timeNeeded = time;
+	}
 
 	public double getCounter(){
 		return this.counter;
@@ -605,6 +614,14 @@ public class Unit {
 	
 	public void setNextPosition(double[] nextPosition) {
 		this.nextPosition = nextPosition;
+	}
+	
+	public double getMovingTime() {
+		return this.movingTime;
+	}
+	
+	public void setMovingTime(double time) {
+		this.movingTime = time;
 	}
 
 	public static String getRandomActivity(String[] activities) {
@@ -758,7 +775,7 @@ public class Unit {
 	 * according to it's current status.
 	 * @param 	dt
 	 * 			The amount of time a unit will advance.
-	 * @throws InterruptedException
+	 * @throws 	InterruptedException
 	 * @throws 	IllegalArgumentException
 	 * 			Throws an IllegalArgumentException if the given dt is larger than 0.2 .
 	 */
@@ -769,7 +786,6 @@ public class Unit {
 		
 		TimeUnit.SECONDS.sleep((long) dt);
 		this.setCounter(this.getCounter() + dt);
-
 		
 		if (this.getCounter() >= REST_INTERVAL) {
 			this.rest();
@@ -784,16 +800,21 @@ public class Unit {
 			return;
 		}
 		if (this.isMoving()) {
-			
+			this.setMovingTime(this.getMovingTime() + dt);
+			this.updatePosition(dt);
 			if (this.getPosition() == this.getNextPosition()) {
-				if (this.getCube() == this.getDestination()) {
+				if (this.getNextPosition() == new double[]{this.getDestination()[0] + 0.5,
+												this.getDestination()[1] + 0.5,
+												this.getDestination()[2] + 0.5}) {
+				
 					this.setStatus("Idle");
+					this.stopWalking();
+					
 				}
 				else {
 					this.moveTo(this.getDestination());
 				}
-			}
-			this.updatePosition(dt);
+			}	
 		}		
 		if ((this.isInitResting()) || (this.isResting())) {		
 			this.setActivityProgress(this.getActivityProgress() + dt);
@@ -812,7 +833,7 @@ public class Unit {
 				// break log / rock
 				// update xp
 				this.setActivityProgress(0);
-				this.setStatus("Default");
+				this.setStatus("Idle");
 			}
 		}			
 	}
@@ -846,8 +867,7 @@ public class Unit {
 		double[] newPos = { oldPos[0] + (dt * velocity[0]),
 							oldPos[1] + (dt * velocity[1]),
 							oldPos[2] + (dt * velocity[2])};
-		
-		if (this.destinationReached(newPos, this.getNextPosition())) {
+		if (this.getMovingTime() >= this.getTimeNeeded()) {
 			this.setPosition(this.getNextPosition());
 		}
 		else {
@@ -897,11 +917,14 @@ public class Unit {
 			this.setSpeed(z);
 			this.setVelocity(this.calcVelocity(x, y, z));
 			
+			this.setTimeNeeded(this.calcDistance(x, y, z)/this.getCurrentSpeed());
+			this.setMovingTime(0);
+			
 			float vy = (float) this.getVelocity()[1];
 			float vx = (float) this.getVelocity()[0];
 			this.setOrientation((float) Math.atan2(vy, vx));
 			
-			double[] oldPos = this.getPosition();
+			int[] oldPos = this.getCube();
 			this.setNextPosition(new double[] {oldPos[0] + x + 0.5, 
 												oldPos[1] + y + 0.5, 
 												oldPos[2] + z + 0.5});
@@ -929,14 +952,14 @@ public class Unit {
 		double[] velocity = this.getVelocity();
 		
 		if (this.getCube(newPos) == this.getCube(target)) {
-			for (int i = 0; i < 3; i++) {
-				if ((velocity[i] < 0) && (newPos[i] > target[i])) {
-					return false;				
-				}
-				if ((velocity[i] > 0) && (newPos[i]) < target[i]) {
-					return false;
-				}
-			}
+			//for (int i = 0; i < 3; i++) {
+				//if ((velocity[i] < 0) && (newPos[i] > target[i])) {
+				//	return false;				
+				//}
+				//if ((velocity[i] > 0) && (newPos[i]) < target[i]) {
+				//	return false;
+				//}
+			//}
 			return true;
 		}
 		return false;
@@ -1053,5 +1076,3 @@ public class Unit {
 		return false;
 	}
 }
-
-
