@@ -807,6 +807,7 @@ public class Unit {
 		attacker.setStatus("Idle");
 		this.setOpponent(null);
 		this.setStatus("Idle");
+		}
 	}
 
 	/**
