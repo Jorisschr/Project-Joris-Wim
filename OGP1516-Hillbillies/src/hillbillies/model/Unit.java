@@ -795,9 +795,9 @@ public class Unit {
 	 */
 	public void rest() {
 		if (this.canBeInterrupted("Resting")) {
-			this.setStatus("InitResting");
 			this.setTimeNeeded("Resting");
 			this.setActivityProgress(0);
+			this.setStatus("InitResting");
 		}
 	}
 
@@ -1088,7 +1088,7 @@ public class Unit {
 	}
 
 	public boolean isInitResting() {
-		return this.getStatus() == "Initial Resting";
+		return this.getStatus() == "InitResting";
 	}
 
 	public boolean isDefaultBehaviorEnabled() {
@@ -1115,7 +1115,7 @@ public class Unit {
 			} else if (rnd == 1) {
 				this.rest();
 			} else if (rnd == 2) {
-				for (int i = 0; i < 3; i++) {
+				for (int i = 0; i < 2; i++) {
 					randomLoc[i] = ThreadLocalRandom.current().nextInt(0, 49 + 1);
 				}
 				this.moveTo(randomLoc);
