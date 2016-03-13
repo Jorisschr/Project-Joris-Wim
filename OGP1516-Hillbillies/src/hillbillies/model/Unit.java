@@ -104,9 +104,10 @@ public class Unit {
 		this.activityProgress = 0;
 		this.timeNeeded = 0;
 		this.destination = new int[] {-1, -1, -1};
-		this.nextPosition = new double[] {0.5, 0.5, 0.5};
+		this.nextPosition = this.getPosition();
 		this.movingTime = 0;
 		this.sprintingTime = 0;
+		this.waitingTo = null;
 		this.opponent = null;
 
 	}
@@ -197,6 +198,8 @@ public class Unit {
 	private double movingTime;
 	
 	private double sprintingTime;
+	
+	private String waitingTo;
 
 	private Unit opponent;
 
@@ -644,6 +647,14 @@ public class Unit {
 			}
 		}
 	}
+	
+	public String getWaitingTo() {
+		return this.waitingTo;
+	}
+	
+	public void setWaitingTo(String arg) {
+		this.waitingTo = arg;
+	}
 
 	public static String getRandomActivity(String[] activities) {
 		int rnd = new Random().nextInt(activities.length);
@@ -794,7 +805,13 @@ public class Unit {
 	 * @post The units current status will be resting.
 	 */
 	public void rest() {
-		if (this.canBeInterrupted("Resting")) {
+		if ((this.isMoving()) && (!(this.getWaitingTo() == "Resting"))) {
+			this.setWaitingTo("Resting");
+		}
+		else if (this.canBeInterrupted("Resting")) {
+			if (this.isMoving()) {
+				this.setWaitingTo("Moving");
+			}
 			this.setTimeNeeded("Resting");
 			this.setActivityProgress(0);
 			this.setStatus("InitResting");
@@ -819,13 +836,19 @@ public class Unit {
 
 		if (this.getHitpoints() == this.getMaxHitpoints()) {
 			if (this.getStamina() == this.getMaxHitpoints()) {
-				this.setStatus("Idle");
+				if (this.getWaitingTo() == "Moving") {
+					this.setStatus("Moving");
+					this.setWaitingTo(null);
+				}
+				else {
+					this.setStatus("Idle");
+				}
 			}
-
 			else {
 				this.setStamina(this.getStamina() + 2);
 			}
-		} else {
+		} 
+		else {
 			this.setHitpoints(this.getHitpoints() + 1);
 		}
 	}
@@ -874,7 +897,7 @@ public class Unit {
 			
 			this.updatePosition(dt);
 			if (this.getPosition() == this.getNextPosition()) {
-				if (this.destinationReached()) {				
+				if ((this.destinationReached()) || (this.getDestination()[0] == -1)) {				
 					this.setStatus("Idle");	
 					this.setDestination(new int[] {-1, -1, -1});
 				}
@@ -997,19 +1020,22 @@ public class Unit {
 		double[] nextPos = {oldPos[0] + x + 0.5, 
 							oldPos[1] + y + 0.5, 
 							oldPos[2] + z + 0.5};
-		
+		if (this.getWaitingTo() == "Resting")
+			this.rest();
 		if (this.canBeInterrupted("Moving")) {
 			this.setStatus("Moving");
 			if(isValidPosition(nextPos)) {
-				this.setNextPosition(nextPos);
-				this.setSpeed(z);
-				this.setVelocity(this.calcVelocity(x, y, z));			
-				this.setTimeNeeded(this.calcDistance(x, y, z)/this.getCurrentSpeed());
-				this.setMovingTime(0);
-	
-				float vy = (float) this.getVelocity()[1];
-				float vx = (float) this.getVelocity()[0];
-				this.setOrientation((float) Math.atan2(vy, vx));
+				if(this.nextPositionReached()) {
+					this.setNextPosition(nextPos);
+					this.setSpeed(z);
+					this.setVelocity(this.calcVelocity(x, y, z));			
+					this.setTimeNeeded(this.calcDistance(x, y, z)/this.getCurrentSpeed());
+					this.setMovingTime(0);
+		
+					float vy = (float) this.getVelocity()[1];
+					float vx = (float) this.getVelocity()[0];
+					this.setOrientation((float) Math.atan2(vy, vx));
+				}				
 			}
 		}
 	}
@@ -1039,11 +1065,23 @@ public class Unit {
 		int[] dest = this.getDestination();
 		double[] pos = this.getPosition();
 		for (int i = 0; i < 3; i++) {
-			if (pos[i] != (dest[i] + 0.5)) {
+			if (pos[i] != (dest[i]) + 0.5) {
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	public boolean nextPositionReached() {
+		double[] nextPos = this.getNextPosition();
+		double[] pos = this.getPosition();
+		for (int i = 0; i < 3; i++) {
+			if (pos[i] != (nextPos[i])) {
+				return false;
+			}
+		}
+		return true;
+		
 	}
 
 	public boolean isInterrupted() {
