@@ -109,7 +109,7 @@ public class Unit {
 		this.sprintingTime = 0;
 		this.waitingTo = null;
 		this.opponent = null;
-
+		this.experience = 0;
 	}
 
 	/**
@@ -202,7 +202,8 @@ public class Unit {
 	private String waitingTo;
 
 	private Unit opponent;
-
+	
+	private int experience;
 	/**
 	 * Variable registering the lower bound for the x, y and z dimensions of the
 	 * generated world.
@@ -591,12 +592,15 @@ public class Unit {
 	 * @param status
 	 *            The status of this unit.
 	 */
-	public void setTimeNeeded(String status) {
-		if (status == "Working")
+	private void setTimeNeeded() {
+		if (this.isWorking())
 			this.timeNeeded = 500 / this.getStrength();
 
-		if ((status == "Resting") || (status == "InitResting"))
+		if (this.isResting() || this.isInitResting())
 			this.timeNeeded = (0.2 * 200 / this.getToughness());
+		
+		if (this.isAttacking())
+			this.timeNeeded = 1;
 	}
 	
 	public void setTimeNeeded(double time) {
@@ -728,7 +732,8 @@ public class Unit {
 
 		this.setStatus("Attacking");
 		defender.setStatus("Defending");
-
+		this.setTimeNeeded();
+		
 		this.setOpponent(defender);
 		defender.setOpponent(this);
 	}
@@ -736,9 +741,9 @@ public class Unit {
 	/**
 	 * Pair two units to each other as opponents.
 	 * 
-	 * @param 	opponent
+	 * @param   opponent
 	 *          The unit to set as opponent.
-	 * @effect 	The units opponent can be set as this opponent.
+	 * @effect  The units opponent can be set as this opponent.
 	 */
 	public void setOpponent(Unit opponent) {
 		this.opponent = opponent;
@@ -790,8 +795,13 @@ public class Unit {
 				double curHealth = this.getHitpoints();
 				double damage = attacker.getStrength() / 10;
 				this.setHitpoints((int) (curHealth - damage));
+				
+				int curXP = attacker.getExperience();
+				attacker.setXP(curXP + 20);
+			} else {
+				int curXP = this.getExperience();
+				this.setXP(curXP + 20);
 			}
-		}
 
 		attacker.setOpponent(null);
 		attacker.setStatus("Idle");
@@ -812,9 +822,9 @@ public class Unit {
 			if (this.isMoving()) {
 				this.setWaitingTo("Moving");
 			}
-			this.setTimeNeeded("Resting");
 			this.setActivityProgress(0);
 			this.setStatus("InitResting");
+			this.setTimeNeeded();
 		}
 	}
 
@@ -856,9 +866,9 @@ public class Unit {
 	public void work() {
 
 		if (this.canBeInterrupted("Working")) {
-			this.setTimeNeeded("Working");
 			this.setActivityProgress(0);
 			this.setStatus("Working");
+			this.setTimeNeeded();
 		}
 	}
 
@@ -917,15 +927,15 @@ public class Unit {
 			}
 		} 
 		else if (this.isWorking()) {
-			// 'cast': if work isn't completed nothing happens, no progress is
-			// saved.
-			// gain 10 xp if work is finished and change game world.
+			// 'cast': if work isn't completed nothing happens, no progress is saved.
+			// if work is finished, change game world.
 			this.setActivityProgress(this.getActivityProgress() + dt);
 			if (this.getActivityProgress() >= this.getTimeNeeded()) {
 				// break log / rock
-				// update xp
 				this.setActivityProgress(0);
-				this.setStatus("Idle");
+				this.setStatus("Default");
+				int curXP = this.getExperience();
+				this.setXP (curXP + 10);
 			}
 		} 
 		else if (this.isAttacking()) {
@@ -1197,6 +1207,27 @@ public class Unit {
 			return true;
 
 		return false;
+	}
+	
+	public int getExperience(){
+		return this.experience;
+	}
+	
+	private void setXP(int experience){
+		this.experience = experience;
+	}
+	
+	
+	private void levelUp(){
+		int curXP = this.getExperience();
+		this.setXP(curXP - 10);
+		
+		int strength = this.getStrength();
+		int agility = this.getAgility();
+		int toughness = this.getToughness();
+		this.setStrength(strength + 1);
+		this.setAgility(agility + 1);
+		this.setToughness(toughness + 1);
 	}
 }
 
