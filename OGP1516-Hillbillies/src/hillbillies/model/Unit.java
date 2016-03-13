@@ -106,6 +106,7 @@ public class Unit {
 		this.destination = new int[] {0, 0, 0};
 		this.nextPosition = new double[] {0.5, 0.5, 0.5};
 		this.movingTime = 0;
+		this.sprintingTime = 0;
 		this.opponent = null;
 
 	}
@@ -194,6 +195,8 @@ public class Unit {
 	private double[] nextPosition;
 	
 	private double movingTime;
+	
+	private double sprintingTime;
 
 	private Unit opponent;
 
@@ -620,6 +623,27 @@ public class Unit {
 	public void setMovingTime(double time) {
 		this.movingTime = time;
 	}
+	
+	public double getSprintingTime() {
+		return this.sprintingTime;
+	}
+	
+	public void setSprintingTime(double time) {
+		this.sprintingTime = time;
+	}
+	
+	public void updateSprinting(double dt) {
+		this.setSprintingTime(this.getSprintingTime() + dt);
+		
+		if (this.getSprintingTime() >= 0.1) {
+			this.setSprintingTime(this.getSprintingTime() - 0.1);
+			this.setStamina(this.getStamina() - 1);
+			
+			if (this.getStamina() == 0) {
+				this.stopSprinting();
+			}
+		}
+	}
 
 	public static String getRandomActivity(String[] activities) {
 		int rnd = new Random().nextInt(activities.length);
@@ -770,7 +794,6 @@ public class Unit {
 	 * @post The units current status will be resting.
 	 */
 	public void rest() {
-
 		if (this.canBeInterrupted("Resting")) {
 			this.setStatus("InitResting");
 			this.setTimeNeeded("Resting");
@@ -842,17 +865,17 @@ public class Unit {
 				this.startDefaultBehavior();
 			}
 		}
-		if (this.isMoving()) {
+		if (this.isMoving()) {		
 			this.setMovingTime(this.getMovingTime() + dt);
+			
+			if (this.isSprinting()) {				
+				this.updateSprinting(dt);
+			}
+			
 			this.updatePosition(dt);
 			if (this.getPosition() == this.getNextPosition()) {
-				if (this.getNextPosition() == new double[]{this.getDestination()[0] + 0.5,
-												this.getDestination()[1] + 0.5,
-												this.getDestination()[2] + 0.5}) {
-				
-					this.setStatus("Idle");
-					this.stopWalking();
-					
+				if (this.destinationReached()) {				
+					this.setStatus("Idle");				
 				}
 				else {
 					this.moveTo(this.getDestination());
@@ -1006,6 +1029,17 @@ public class Unit {
 			return true;
 		}
 		return false;
+	}
+	
+	public boolean destinationReached() {
+		int[] dest = this.getDestination();
+		double[] pos = this.getPosition();
+		for (int i = 0; i < 3; i++) {
+			if (pos[i] != (dest[i] + 0.5)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public boolean isInterrupted() {
