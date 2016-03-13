@@ -103,7 +103,7 @@ public class Unit {
 		this.velocity = new double[] { 0, 0, 0 };
 		this.activityProgress = 0;
 		this.timeNeeded = 0;
-		this.destination = new int[] {0, 0, 0};
+		this.destination = new int[] {-1, -1, -1};
 		this.nextPosition = new double[] {0.5, 0.5, 0.5};
 		this.movingTime = 0;
 		this.sprintingTime = 0;
@@ -204,13 +204,13 @@ public class Unit {
 	 * Variable registering the lower bound for the x, y and z dimensions of the
 	 * generated world.
 	 */
-	private static final int LOWER_BOUND = 0;
+	private static final double LOWER_BOUND = 0.5;
 
 	/**
 	 * Variable registering the upper bound for the x, y and z dimensions of the
 	 * generated world.
 	 */
-	private static final int UPPER_BOUND = 50;
+	private static final double UPPER_BOUND = 49.5;
 
 	/**
 	 * Return the position of this unit.
@@ -457,7 +457,7 @@ public class Unit {
 	 *       the specified angle.
 	 */
 	private void setOrientation(float angle) {
-		if ((angle >= 0) && (angle <= (float) 2 * Math.PI)) {
+		if ((angle >= -1 * Math.PI) && (angle <= (float) Math.PI)) {
 			this.orientation = angle;
 		}
 
@@ -875,7 +875,8 @@ public class Unit {
 			this.updatePosition(dt);
 			if (this.getPosition() == this.getNextPosition()) {
 				if (this.destinationReached()) {				
-					this.setStatus("Idle");				
+					this.setStatus("Idle");	
+					this.setDestination(new int[] {-1, -1, -1});
 				}
 				else {
 					this.moveTo(this.getDestination());
@@ -966,6 +967,7 @@ public class Unit {
 	public void moveTo(int[] location) {
 		if (this.canBeInterrupted("Moving"))
 			this.setStatus("Moving");
+		
 		this.setDestination(location);
 
 		int[] nextPos = new int[3];
@@ -990,23 +992,25 @@ public class Unit {
 	 * @param targetPos
 	 *            The adjacent cube to which this unit has to move.
 	 */
-	public void moveToAdjacent(int x, int y, int z) {
+	public void moveToAdjacent(int x, int y, int z) {	
+		int[] oldPos = this.getCube();		
+		double[] nextPos = {oldPos[0] + x + 0.5, 
+							oldPos[1] + y + 0.5, 
+							oldPos[2] + z + 0.5};
+		
 		if (this.canBeInterrupted("Moving")) {
 			this.setStatus("Moving");
-
-			this.setSpeed(z);
-			this.setVelocity(this.calcVelocity(x, y, z));			
-			this.setTimeNeeded(this.calcDistance(x, y, z)/this.getCurrentSpeed());
-			this.setMovingTime(0);
-
-			float vy = (float) this.getVelocity()[1];
-			float vx = (float) this.getVelocity()[0];
-			this.setOrientation((float) Math.atan2(vy, vx));
-		
-			int[] oldPos = this.getCube();
-			this.setNextPosition(new double[] {oldPos[0] + x + 0.5, 
-												oldPos[1] + y + 0.5, 
-												oldPos[2] + z + 0.5});
+			if(isValidPosition(nextPos)) {
+				this.setNextPosition(nextPos);
+				this.setSpeed(z);
+				this.setVelocity(this.calcVelocity(x, y, z));			
+				this.setTimeNeeded(this.calcDistance(x, y, z)/this.getCurrentSpeed());
+				this.setMovingTime(0);
+	
+				float vy = (float) this.getVelocity()[1];
+				float vx = (float) this.getVelocity()[0];
+				this.setOrientation((float) Math.atan2(vy, vx));
+			}
 		}
 	}
 
