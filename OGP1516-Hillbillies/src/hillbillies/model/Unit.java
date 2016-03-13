@@ -1022,6 +1022,7 @@ public class Unit {
 							oldPos[2] + z + 0.5};
 		if (this.getWaitingTo() == "Resting")
 			this.rest();
+		
 		if (this.canBeInterrupted("Moving")) {
 			this.setStatus("Moving");
 			if(isValidPosition(nextPos)) {
