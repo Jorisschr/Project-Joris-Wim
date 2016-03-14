@@ -223,7 +223,36 @@ public class Unit {
 	public double[] getPosition() {
 		return this.position;
 	}
-
+	
+	public int[] getOccupyingCube(){
+		double[] curPos = this.getPosition();
+		int[] cube = {0,0,0};
+		
+		for(int i = 0; i<3; i++){
+			cube[i] = (int) Math.floor(curPos[i]);
+		}
+		
+		return cube;
+	}
+	/**
+	 * Check if two units are in the same or a neighboring cube.
+	 * 
+	 * @param  otherUnit
+	 * 		   the other Unit to check the location of  
+	 * @return True if the distance between two Units is less than or equal to one block
+	 * 		   | result == (distance < sqrt(2))
+	 */
+	public boolean isAdjacentTo(Unit otherUnit){
+		int[] thisPos = this.getOccupyingCube();
+		int[] otherPos = otherUnit.getOccupyingCube();
+		int[] distance = {0,0,0};
+		
+		for (int i=0; i<3; i++)
+			   distance[i] = thisPos[i] - otherPos[i];
+		
+		return this.calcDistance(distance[0], distance[1], distance[2])<=Math.sqrt(2);
+	}
+	
 	/**
 	 * Check whether the given position is a valid position for a unit.
 	 * 
@@ -368,6 +397,9 @@ public class Unit {
 		if ((weight >= MIN_ATTRIBUTE) && (weight <= MAX_ATTRIBUTE)
 				&& (weight >= ((this.getAgility() + this.getStrength()) / 2))) {
 			this.weight = weight;
+		}
+		else {
+			this.weight = (int) ((this.getAgility() + this.getStrength()) / 2);
 		}
 	}
 
@@ -718,24 +750,26 @@ public class Unit {
 	 * @effect
 	 */
 	public void attack(Unit defender) {
-		// TODO: exceptions for when two units are not standing next to each other or are from the same faction.
+		// TODO: exceptions for when two units are from the same faction.
 		// TODO: look again at orientation: not yet on point (see tests: put 9 units in a square and make the centre unit fight everyone else).
-		float attackerOr = (float) Math.atan2(defender.getPosition()[1] - this.getPosition()[1],
-				                              defender.getPosition()[0] - this.getPosition()[0]);
-		float defenderOr = (float) Math.atan2(this.getPosition()[1] - defender.getPosition()[1],
-				                              this.getPosition()[0] - defender.getPosition()[0]);
-		this.setOrientation(attackerOr);
-		defender.setOrientation(defenderOr);
+		if (this.isAdjacentTo(defender)){
+			float attackerOr = (float) Math.atan2(defender.getPosition()[1] - this.getPosition()[1],
+                    defender.getPosition()[0] - this.getPosition()[0]);
+			float defenderOr = (float) Math.atan2(this.getPosition()[1] - defender.getPosition()[1],
+                    this.getPosition()[0] - defender.getPosition()[0]);
+			this.setOrientation(attackerOr);
+			defender.setOrientation(defenderOr);
 
-		this.setActivityProgress(0);
-		defender.setActivityProgress(0);
+			this.setActivityProgress(0);
+			defender.setActivityProgress(0);
 
-		this.setStatus("Attacking");
-		defender.setStatus("Defending");
-		this.setTimeNeeded();
-		
-		this.setOpponent(defender);
-		defender.setOpponent(this);
+			this.setStatus("Attacking");
+			defender.setStatus("Defending");
+			this.setTimeNeeded();
+
+			this.setOpponent(defender);
+			defender.setOpponent(this);
+		}
 	}
 
 	/**
@@ -767,7 +801,7 @@ public class Unit {
 			double[] pos = this.getPosition();
 			double[] evasion = { 0, 0, 0 };
 			boolean foundNewPos = false;
-			do {
+			 while (foundNewPos == false) {
 				for (int i = 0; i < 2; i++) {
 
 					double plus = new Random().nextDouble();
@@ -779,15 +813,13 @@ public class Unit {
 				for (int i = 0; i < pos.length; i++)
 
 					newPos[i] = pos[i] + evasion[i];
-
-				this.setPosition(newPos);
 				foundNewPos = true;
 				// TODO create passable terrain check in World class
-
-			} while (foundNewPos == false);
-		}
-
-		else {
+				this.setPosition(newPos);
+			}
+			int curXP = this.getExperience();
+			this.setXP(curXP + 20);
+		} else {
 			double blockProb = 0.25 * (this.getStrength() - this.getAgility())
 					/ (attacker.getStrength() - attacker.getAgility());
 			boolean blocked = (new Random().nextDouble() <= blockProb);
@@ -934,7 +966,7 @@ public class Unit {
 			if (this.getActivityProgress() >= this.getTimeNeeded()) {
 				// break log / rock
 				this.setActivityProgress(0);
-				this.setStatus("Default");
+				this.setStatus("Idle");
 				int curXP = this.getExperience();
 				this.setXP (curXP + 10);
 			}
@@ -1043,10 +1075,13 @@ public class Unit {
 					this.setVelocity(this.calcVelocity(x, y, z));			
 					this.setTimeNeeded(this.calcDistance(x, y, z)/this.getCurrentSpeed());
 					this.setMovingTime(0);
+					
 		
 					float vy = (float) this.getVelocity()[1];
 					float vx = (float) this.getVelocity()[0];
 					this.setOrientation((float) Math.atan2(vy, vx));
+					
+					this.setXP(this.getExperience() + 1);
 				}				
 			}
 		}
@@ -1216,6 +1251,10 @@ public class Unit {
 	
 	private void setXP(int experience){
 		this.experience = experience;
+		
+		if (this.getExperience() >= 10) {
+			this.levelUp();
+		}
 	}
 	
 	
@@ -1226,9 +1265,19 @@ public class Unit {
 		int strength = this.getStrength();
 		int agility = this.getAgility();
 		int toughness = this.getToughness();
-		this.setStrength(strength + 1);
-		this.setAgility(agility + 1);
-		this.setToughness(toughness + 1);
+		int attribute = ThreadLocalRandom.current().nextInt(0, 2 + 1);
+		
+		if (attribute == 0) {
+			this.setStrength(strength + 1);
+		}
+		else if (attribute == 1) {
+			this.setAgility(agility + 1);
+		}		
+		else if (attribute == 2) {
+			this.setToughness(toughness + 1);
+		}
+		
+		this.setWeight(this.getWeight());
 	}
 }
 
