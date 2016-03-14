@@ -199,26 +199,22 @@ public class Facade implements IFacade {
 
 	@Override
 	public World createWorld(int[][][] terrainTypes, TerrainChangeListener modelListener) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return new World(terrainTypes, modelListener);
 	}
 
 	@Override
 	public int getNbCubesX(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return 0;
+		return world.getNbCubesX();
 	}
 
 	@Override
 	public int getNbCubesY(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return 0;
+		return world.getNbCubesY();
 	}
 
 	@Override
 	public int getNbCubesZ(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return 0;
+		return world.getNbCubesZ();
 	}
 
 	@Override
@@ -229,14 +225,12 @@ public class Facade implements IFacade {
 
 	@Override
 	public int getCubeType(World world, int x, int y, int z) throws ModelException {
-		// TODO Auto-generated method stub
-		return 0;
+		return world.getCubeType(x, y, z);
 	}
 
 	@Override
 	public void setCubeType(World world, int x, int y, int z, int value) throws ModelException {
-		// TODO Auto-generated method stub
-		
+		world.setCubeType(x, y, z, value);
 	}
 
 	@Override
