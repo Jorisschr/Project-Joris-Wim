@@ -398,6 +398,9 @@ public class Unit {
 				&& (weight >= ((this.getAgility() + this.getStrength()) / 2))) {
 			this.weight = weight;
 		}
+		else {
+			this.weight = (int) ((this.getAgility() + this.getStrength()) / 2);
+		}
 	}
 
 	/**
@@ -963,7 +966,7 @@ public class Unit {
 			if (this.getActivityProgress() >= this.getTimeNeeded()) {
 				// break log / rock
 				this.setActivityProgress(0);
-				this.setStatus("Default");
+				this.setStatus("Idle");
 				int curXP = this.getExperience();
 				this.setXP (curXP + 10);
 			}
@@ -1072,10 +1075,13 @@ public class Unit {
 					this.setVelocity(this.calcVelocity(x, y, z));			
 					this.setTimeNeeded(this.calcDistance(x, y, z)/this.getCurrentSpeed());
 					this.setMovingTime(0);
+					
 		
 					float vy = (float) this.getVelocity()[1];
 					float vx = (float) this.getVelocity()[0];
 					this.setOrientation((float) Math.atan2(vy, vx));
+					
+					this.setXP(this.getExperience() + 1);
 				}				
 			}
 		}
@@ -1270,6 +1276,8 @@ public class Unit {
 		else if (attribute == 2) {
 			this.setToughness(toughness + 1);
 		}
+		
+		this.setWeight(this.getWeight());
 	}
 }
 
