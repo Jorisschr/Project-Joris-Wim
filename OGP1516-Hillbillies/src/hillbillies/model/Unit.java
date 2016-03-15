@@ -977,7 +977,7 @@ public class Unit {
 		return true;
 	}
 	
-	/*
+	/**
 	 * Update this units position according to its current velocity, 
 	 * destination and advanced time dt.
 	 */
