@@ -14,6 +14,26 @@ public class World {
 		this.nbCubesZ = terrainTypes[0][0].length;
 	}
 	
+	public static double getLowerBound() {
+		return LOWER_BOUND;
+	}
+
+	public static double getUpperBound() {
+		return UPPER_BOUND;
+	}
+
+	/**
+	 * Variable registering the lower bound for the x, y and z dimensions of the
+	 * generated world.
+	 */
+	private static final double LOWER_BOUND = 0.5;
+
+	/**
+	 * Variable registering the upper bound for the x, y and z dimensions of the
+	 * generated world.
+	 */
+	private static final double UPPER_BOUND = 49.5;
+	
 	private int[][][] terrain;
 	/*
 	 * Variable registering the number of cubes in the world in the x-direction.

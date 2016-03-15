@@ -162,12 +162,12 @@ public class Unit {
 	 */
 	private String status;
 
-	/*
+	/**
 	 * Variable registering the unit's movement status.
 	 */
 	private String movement;
 
-	/*
+	/**
 	 * Variable registering whether the unit's behavior is being interrupted.
 	 */
 	private boolean interrupted;
@@ -204,18 +204,7 @@ public class Unit {
 	private Unit opponent;
 	
 	private int experience;
-	/**
-	 * Variable registering the lower bound for the x, y and z dimensions of the
-	 * generated world.
-	 */
-	private static final double LOWER_BOUND = 0.5;
-
-	/**
-	 * Variable registering the upper bound for the x, y and z dimensions of the
-	 * generated world.
-	 */
-	private static final double UPPER_BOUND = 49.5;
-
+	
 	/**
 	 * Return the position of this unit.
 	 */
@@ -265,7 +254,7 @@ public class Unit {
 	 */
 	public boolean isValidPosition(double[] position) {
 		for (int i = 0; i < position.length; i++) {
-			if ((position[i] < LOWER_BOUND) || (position[i] > UPPER_BOUND)) {
+			if ((position[i] < World.getLowerBound()) || (position[i] > World.getUpperBound())) {
 				return false;
 			}
 		}

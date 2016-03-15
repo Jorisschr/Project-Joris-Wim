@@ -1,5 +1,7 @@
 package helperclasses;
 
+import hillbillies.model.World;
+
 public class Vector3d {
 	
 	/**
@@ -48,25 +50,50 @@ public class Vector3d {
 	 */
 	private double z;
 	
-	/*
+	/**
 	 * Return the x coordinate of this vector.
 	 */
 	public double getX() {
 		return this.x;
 	}
 	
-	/*
+	/**
 	 * Return the y coordinate of this vector.
 	 */
 	public double getY() {
 		return this.y;
 	}
 	
-	/*
+	/**
 	 * Return the z coordinate of this vector.
 	 */
 	public double getZ() {
 		return this.z;
+	}
+	
+	/**
+	 * Return the specified coordinate of this vector
+	 * @param   dimension
+	 * 			the axis of which the coordinate must be given. 0 is X, 1 is Y, and 2 is Z.
+	 * @return	X-coordinate of this vector
+	 * 			| dimension = 0
+	 * @return	Y-coordinate of this vector
+	 * 			| dimension = 1
+	 * @return	Z-coordinate of this vector
+	 * 			| dimension = 2
+	 */
+	public double getDimension(int dimension){
+		double[] vector = this.getDouble();
+		return vector[dimension];
+	}
+	
+	/**
+	 * Return a double array with the coordinates of this vector in the right order: {X,Y,Z}
+	 * @return  An array of three doubles with the coordinates of this vector.
+	 */
+	public double[] getDouble(){
+		double[] vector = {this.getX(),this.getY(),this.getZ()};
+		return vector;
 	}
 	
 	/**
@@ -128,4 +155,25 @@ public class Vector3d {
 		}
 		return this;
 	}
+	
+	public boolean isValidPosition(double[] position) {
+		for (int i = 0; i < position.length; i++) {
+			if ((position[i] < World.getLowerBound()) || (position[i] > World.getUpperBound())) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean isValidPosition() {
+		
+		for (int i = 0; i <= 2; i++) {
+			double coordinate = this.getDimension(i);
+			if ((coordinate < World.getLowerBound()) || (coordinate> World.getUpperBound())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }
