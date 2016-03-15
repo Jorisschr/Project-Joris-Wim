@@ -5,7 +5,9 @@ import helperclasses.Vector3d;
 
 public class Boulder {
 	/**
-	 * Initialize a this new Boulder on a given location and with a random weight between 10 and 50, inclusively
+	 * Initialize a new boulder on a given location with a random weight 
+	 * between 10 and 50, inclusively
+	 * 
 	 * @param   position
 	 * 			The starting postion of this Boulder
 	 * @throws 	OutOfBoundsException
