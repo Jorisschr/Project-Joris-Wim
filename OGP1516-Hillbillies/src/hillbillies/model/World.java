@@ -1,10 +1,41 @@
 package hillbillies.model;
 
+import helperclasses.*;
 import hillbillies.part2.listener.TerrainChangeListener;
+import hillbillies.util.ConnectedToBorder;
 import ogp.framework.util.ModelException;
 
 public class World {
 	
+	/**
+	 * Create a new world of the given size and with the given terrain. To keep
+	 * the GUI display up to date, the method in the given listener must be
+	 * called whenever the terrain type of a cube in the world changes.
+	 * 
+	 * @param terrainTypes
+	 *            A three-dimensional array (structured as [x][y][z]) with the
+	 *            types of the terrain, encoded as integers. The terrain always
+	 *            has the shape of a box (i.e., the array terrainTypes[0] has
+	 *            the same length as terrainTypes[1] etc.). The integer types
+	 *            are as follows:
+	 *            <ul>
+	 *            <li>0: air</li>
+	 *            <li>1: rock</li>
+	 *            <li>2: tree</li>
+	 *            <li>3: workshop</li>
+	 *            </ul>
+	 * @param modelListener
+	 *            An object with a single method,
+	 *            {@link TerrainChangeListener#notifyTerrainChanged(int, int, int)}
+	 *            . This method must be called by your implementation whenever
+	 *            the terrain type of a cube changes (e.g., as a consequence of
+	 *            cave-ins), so that the GUI will correctly update the display.
+	 *            The coordinate of the changed cube must be given in the form
+	 *            of the parameters x, y and z. You do not need to call this
+	 *            method during the construction of your world.
+	 * @return
+	 * @throws ModelException
+	 */
 	public World(int[][][] terrainTypes, TerrainChangeListener modelListener) {
 		
 		this.terrain = terrainTypes;
@@ -12,6 +43,10 @@ public class World {
 		this.nbCubesX = terrainTypes.length;
 		this.nbCubesY = terrainTypes[0].length;
 		this.nbCubesZ = terrainTypes[0][0].length;
+		
+		this.connections = new ConnectedToBorder(this.getNbCubesX(),
+												this.getNbCubesY(),
+												this.getNbCubesZ());
 	}
 	
 	public static double getLowerBound() {
@@ -51,6 +86,11 @@ public class World {
 	 */
 	private final int nbCubesZ;
 	
+	/*
+	 * Variable registering
+	 */
+	private ConnectedToBorder connections;
+
 	/*
 	 * Return the number of cubes in the world in the x-direction.
 	 */
@@ -108,10 +148,28 @@ public class World {
 	 * @throws ModelException
 	 *             A precondition was violated or an exception was thrown.
 	 */
-
 	public void setCubeType(int x, int y, int z, int value) {
 		if ((value >= 0) && (value < 4)) {
 			this.terrain[x][y][z] = value;
 		}
+	}
+	
+	/**
+	 * Returns whether the cube at the given position is a solid cube that is
+	 * connected to a border of the world through other directly adjacent solid
+	 * cubes.
+	 * 
+	 * @note The result is pre-computed, so this query returns immediately.
+	 * 
+	 * @param x
+	 *            The x-coordinate of the cube to test
+	 * @param y
+	 *            The y-coordinate of the cube to test
+	 * @param z
+	 *            The z-coordinate of the cube to test
+	 * @return true if the cube is connected; false otherwise
+	 */
+	public boolean isSolidConnectedToBorder(int x, int y, int z) {
+		return connections.isSolidConnectedToBorder(x, y, z);
 	}
 }

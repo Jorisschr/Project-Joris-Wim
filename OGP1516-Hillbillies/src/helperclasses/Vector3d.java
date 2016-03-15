@@ -9,7 +9,7 @@ public class Vector3d {
 	 * 
 	 * @param 	vector
 	 * 			An array of doubles of length 3. 
-	 * 			Containing, in order, the x, y and z dimensions.
+	 * 			Containing, in order, the x, y and z dimensions of the new vector.
 	 */
 	public Vector3d(double[] vector) {
 		if (vector.length == 3) {		
@@ -19,6 +19,13 @@ public class Vector3d {
 		}
 	}
 	
+	/**
+	 * Initialize a new three dimensional vector with the given dimensions.
+	 * 
+	 * @param 	vector
+	 * 			An array of integers of length 3.
+	 * 			Containing, in order, the x, y and z dimensions of the new vector.
+	 */
 	public Vector3d(int[] vector) {
 		if (vector.length == 3) {
 			this.x = vector[0];
