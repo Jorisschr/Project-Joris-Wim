@@ -171,7 +171,15 @@ public class World {
 			World.terrain[x][y][z] = value;
 		}
 	}
-	
+	/**
+	 * Checks if this cube of this postion is a solid block.
+	 * @return  True if the World's cube at this postion is solid.
+	 * 	    | cube.getCubeType() != Air
+	 */
+	public static boolean isSolid(Vector3d position) {
+		//TODO: wat is welk blok-type? Ik heb nu gewoon een check met 0 als het air is.
+		return(getCubeType(position.getCube()) != 0);
+	{
 	/**
 	 * Returns whether the cube at the given position is a solid cube that is
 	 * connected to a border of the world through other directly adjacent solid
