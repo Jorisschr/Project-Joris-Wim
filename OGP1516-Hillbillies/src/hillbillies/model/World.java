@@ -40,7 +40,7 @@ public class World {
 	 */
 	public World(int[][][] terrainTypes, TerrainChangeListener modelListener) {
 		
-		this.terrain = terrainTypes;
+		World.terrain = terrainTypes;
 		
 		this.nbCubesX = terrainTypes.length;
 		this.nbCubesY = terrainTypes[0].length;
@@ -138,7 +138,13 @@ public class World {
 	 *         {@link #createWorld(int[][][], TerrainChangeListener)}.
 	 */
 	public int getCubeType(int x, int y, int z) {
-		return this.terrain[x][y][z];
+		return World.terrain[x][y][z];
+	}
+	
+	public static int getCubeType(Vector3d position) {
+		Vector3d cube = position.getCube();
+		
+		return World.terrain[(int) cube.getX()][(int) cube.getY()][(int) cube.getZ()];
 	}
 	
 	/**
@@ -162,7 +168,7 @@ public class World {
 	 */
 	public void setCubeType(int x, int y, int z, int value) {
 		if ((value >= 0) && (value < 4)) {
-			this.terrain[x][y][z] = value;
+			World.terrain[x][y][z] = value;
 		}
 	}
 	
@@ -219,7 +225,7 @@ public class World {
 	}
 	
 	private int[] getRndValidPos() {
-		// hoe efficiënt een random valid position vinden?
+		// hoe efficiÃ«nt een random valid position vinden?
 		return new int[] {0, 0, 0};
 	}
 }
