@@ -51,6 +51,22 @@ public class Vector3d {
 	}
 	
 	/**
+	 * Initialize a new three dimensional vector with the given dimensions.
+	 * 
+	 * @param 	x
+	 * 			The x-coordinate for this new vector.
+	 * @param 	y
+	 * 			The y-coordinate for this new vector.
+	 * @param 	z
+	 * 			The z-coordinate for this new vector.
+	 */
+	public Vector3d(int x, int y, int z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+	
+	/**
 	 * Variable registering the x-coordinate of this vector.
 	 */
 	private double x;
@@ -110,7 +126,14 @@ public class Vector3d {
 		double[] vector = {this.getX(),this.getY(),this.getZ()};
 		return vector;
 	}
-
+	/**
+	 * Return a vector containing the floor of every coordinate of this vector. 
+	 * @ return  A new Vector3d with three doubles as it's coordinates, which are the floor of the old Vector3d
+	 */
+	public Vector3d getCube(){
+		Vector3d cube = new Vector3d(Math.floor(this.getX()), Math.floor(this.getY()), Math.floor(this.getZ()));
+		return cube;
+	}
 	/**
 	 * Set the x coordinate of this vector to the given value.
 	 * 
