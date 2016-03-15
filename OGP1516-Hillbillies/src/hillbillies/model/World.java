@@ -76,7 +76,7 @@ public class World {
 	private static final int MAX_UNITS = 100;
 	private static final int MAX_FACTIONS = 5;
 	
-	private int[][][] terrain;
+	private static int[][][] terrain;
 	
 	/*
 	 * Variable registering the number of cubes in the world in the x-direction.
