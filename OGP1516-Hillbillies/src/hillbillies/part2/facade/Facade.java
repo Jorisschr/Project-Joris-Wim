@@ -3,6 +3,7 @@ package hillbillies.part2.facade;
 import java.util.Set;
 
 import helperclasses.OutOfBoundsException;
+import helperclasses.Vector3d;
 import hillbillies.model.Boulder;
 import hillbillies.model.Faction;
 import hillbillies.model.Log;
@@ -119,7 +120,8 @@ public class Facade implements IFacade {
 	
 	@Override
 	public void moveToAdjacent(Unit unit, int dx, int dy, int dz) throws ModelException {
-		unit.moveToAdjacent(dx, dy, dz);
+		Vector3d vector = new Vector3d(dx, dy, dz);
+		unit.moveToAdjacent(vector);
 	}
 	
 	@Override

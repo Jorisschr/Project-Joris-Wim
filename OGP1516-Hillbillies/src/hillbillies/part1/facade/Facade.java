@@ -1,6 +1,7 @@
 package hillbillies.part1.facade;
 import ogp.framework.util.ModelException;
 import helperclasses.OutOfBoundsException;
+import helperclasses.Vector3d;
 import hillbillies.model.Unit;
 
 
@@ -113,7 +114,8 @@ public class Facade implements IFacade {
 	
 	@Override
 	public void moveToAdjacent(Unit unit, int dx, int dy, int dz) throws ModelException {
-		unit.moveToAdjacent(dx, dy, dz);
+		Vector3d vector = new Vector3d(dx, dy, dz);
+		unit.moveToAdjacent(vector);
 	}
 	
 	@Override

@@ -19,6 +19,14 @@ public class Vector3d {
 		}
 	}
 	
+	public Vector3d(int[] vector) {
+		if (vector.length == 3) {
+			this.x = vector[0];
+			this.y = vector[1];
+			this.z = vector[2];
+		}
+	}
+	
 	/**
 	 * Initialize a new three dimensional vector with the given dimensions.
 	 * 
@@ -137,12 +145,26 @@ public class Vector3d {
 							this.getY() + other.getY(), 
 							this.getZ() + other.getZ());
 	}
+	
+	/**
+	 * Add 'a' to every coordinate of this vector.
+	 * 
+	 * @param 	a
+	 * 			The number to add to every coordinate.
+	 */
+	public Vector3d add(double a) {
+		return new Vector3d(this.getX() + a,
+							this.getY() + a,
+							this.getZ() + a);
+	}
+
 
 	/**
-	 * Return a new vector with as coordinates the subtraction of this and the other vector.
+	 * Return a new vector with as coordinates the subtraction of 
+	 * the corresponding coordinates of this vector and the other.
 	 * 
 	 * @param 	other
-	 * 			The vector to subtract.
+	 * 			The vector on the right hand side of the subtraction.
 	 */
 	public Vector3d subtract(Vector3d other) {
 		return new Vector3d(this.getX() - other.getX(),

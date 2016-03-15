@@ -61,6 +61,7 @@ public class Unit {
 		}
 
 		if (!canHaveAsName(name)) {
+			// REGEX!!
 			// display message?
 			throw new IllegalArgumentException(name);
 		}
@@ -95,12 +96,11 @@ public class Unit {
 		this.orientation = (float) Math.PI / 2;
 		this.stamina = getMaxHitpoints();
 		this.hitpoints = getMaxHitpoints();
-		this.interrupted = false;
 		this.movement = "Walking";
 		this.enableDefaultBehavior = enableDefaultBehavior;
 		this.status = "Idle";
 		this.speed = 0;
-		this.velocity = new double[] { 0, 0, 0 };
+		this.velocity = new Vector3d(0, 0, 0);
 		this.activityProgress = 0;
 		this.timeNeeded = 0;
 		this.destination = new int[] {-1, -1, -1};
@@ -168,11 +168,6 @@ public class Unit {
 	private String movement;
 
 	/**
-	 * Variable registering whether the unit's behavior is being interrupted.
-	 */
-	private boolean interrupted;
-
-	/**
 	 * Variable registering the passed time since the unit started its current
 	 * activity
 	 */
@@ -185,7 +180,7 @@ public class Unit {
 
 	private double speed;
 
-	private double[] velocity;
+	private Vector3d velocity;
 
 	private double activityProgress;
 
@@ -231,15 +226,12 @@ public class Unit {
 	 * @return True if the distance between two Units is less than or equal to one block
 	 * 		   | result == (distance < sqrt(2))
 	 */
-	public boolean isAdjacentTo(Unit otherUnit){
-		int[] thisPos = this.getOccupyingCube();
-		int[] otherPos = otherUnit.getOccupyingCube();
-		int[] distance = {0,0,0};
-		
-		for (int i=0; i<3; i++)
-			   distance[i] = thisPos[i] - otherPos[i];
-		
-		return this.calcDistance(distance[0], distance[1], distance[2])<=Math.sqrt(2);
+	public boolean isAdjacentTo(Unit other){
+		Vector3d thisPos = new Vector3d(this.getCube());
+		Vector3d otherPos = new Vector3d(other.getCube());
+
+		return (thisPos.subtract(otherPos).calcNorm() <= Math.sqrt(2));
+
 	}
 	
 	/**
@@ -690,13 +682,13 @@ public class Unit {
 	 * Return the velocity of a Unit.
 	 */
 	public double[] getVelocity() {
-		return this.velocity;
+		return this.velocity.getDouble();
 	}
 
 	/**
 	 * Set the velocity of a unit.
 	 */
-	public void setVelocity(double[] velocity) {
+	public void setVelocity(Vector3d velocity) {
 		this.velocity = velocity;
 	}
 
@@ -708,22 +700,8 @@ public class Unit {
 	 * @param z
 	 * @return
 	 */
-	public double[] calcVelocity(int x, int y, int z) {
-		double d = calcDistance(x, y, z);
-		double curSpeed = this.getCurrentSpeed();
-		double[] velocity = { curSpeed * x / d, curSpeed * y / d, curSpeed * z / d };
-		return velocity;
-	}
-
-	/**
-	 * Calculate the distance between two points in the game world.
-	 * 
-	 * @throws OutOfBoundsException
-	 *             The given position is out of bounds. | !
-	 *             isValidPosition(position)
-	 */
-	public double calcDistance(int x, int y, int z) {
-		return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+	public Vector3d calcVelocity(Vector3d vector) {
+		return vector.multiply(this.getCurrentSpeed() / vector.calcNorm());
 	}
 
 	/**
@@ -885,6 +863,9 @@ public class Unit {
 		}
 	}
 
+	/*
+	 * Initiate working for this unit.
+	 */
 	public void work() {
 
 		if (this.canBeInterrupted("Working")) {
@@ -995,7 +976,11 @@ public class Unit {
 		}
 		return true;
 	}
-
+	
+	/*
+	 * Update this units position according to its current velocity, 
+	 * destination and advanced time dt.
+	 */
 	public void updatePosition(double dt) {
 		double[] oldPos = this.getPosition();
 		double[] velocity = this.getVelocity();
@@ -1037,7 +1022,7 @@ public class Unit {
 				nextPos[i] = -1;
 			}
 		}
-		this.moveToAdjacent(nextPos[0], nextPos[1], nextPos[2]);
+		this.moveToAdjacent(new Vector3d(nextPos[0], nextPos[1], nextPos[2]));
 	}
 
 	/**
@@ -1047,22 +1032,21 @@ public class Unit {
 	 * @param targetPos
 	 *            The adjacent cube to which this unit has to move.
 	 */
-	public void moveToAdjacent(int x, int y, int z) {	
-		int[] oldPos = this.getCube();		
-		double[] nextPos = {oldPos[0] + x + 0.5, 
-							oldPos[1] + y + 0.5, 
-							oldPos[2] + z + 0.5};
+	public void moveToAdjacent(Vector3d vector) {	
+		Vector3d oldPos = new Vector3d(this.getCube());	
+		Vector3d nextPos = oldPos.add(0.5).add(vector);
+
 		if (this.getWaitingTo() == "Resting")
 			this.rest();
 		
 		if (this.canBeInterrupted("Moving")) {
 			this.setStatus("Moving");
-			if(isValidPosition(nextPos)) {
+			if(isValidPosition(nextPos.getDouble())) {
 				if(this.nextPositionReached()) {
-					this.setNextPosition(nextPos);
-					this.setSpeed(z);
-					this.setVelocity(this.calcVelocity(x, y, z));			
-					this.setTimeNeeded(this.calcDistance(x, y, z)/this.getCurrentSpeed());
+					this.setNextPosition(nextPos.getDouble());
+					this.setSpeed((int) vector.getZ());
+					this.setVelocity(this.calcVelocity(vector));			
+					this.setTimeNeeded(vector.calcNorm() / this.getCurrentSpeed());
 					this.setMovingTime(0);
 					
 		
@@ -1075,104 +1059,110 @@ public class Unit {
 			}
 		}
 	}
-
-	/**
-	 * Check whether the given double precision number lies between the given
-	 * borders.
-	 * 
-	 * @param x
-	 *            The double precision number to be checked.
-	 * @param a
-	 *            One of the borders of the interval.
-	 * @param b
-	 *            The other border of the interval.
+	
+	/*
+	 * Check whether the unit has reached its destination.
 	 */
-	public static boolean intervalContains(double x, double a, double b) {
-		if ((x < (a - (int) a)) && (x > (b - (int) b))){
-			return true;
-		}
-		if ((x < (b - (int) b)) && (x > (a - (int) a))){
-			return true;
-		}
-		return false;
-	}
-	
 	public boolean destinationReached() {
-		int[] dest = this.getDestination();
-		double[] pos = this.getPosition();
-		for (int i = 0; i < 3; i++) {
-			if (pos[i] != (dest[i]) + 0.5) {
-				return false;
-			}
-		}
+		Vector3d dest = new Vector3d(this.getDestination());
+		Vector3d pos = new Vector3d(this.getPosition());
+		
+		if (!pos.equals(dest.add(0.5))) {
+			return false;
+		}		
 		return true;
 	}
 	
+	/*
+	 * Check whether the unit has reached a neighboring cube.
+	 */
 	public boolean nextPositionReached() {
-		double[] nextPos = this.getNextPosition();
-		double[] pos = this.getPosition();
-		for (int i = 0; i < 3; i++) {
-			if (pos[i] != (nextPos[i])) {
-				return false;
-			}
-		}
-		return true;
-		
+		Vector3d nextPos = new Vector3d(this.getNextPosition());
+		Vector3d pos = new Vector3d(this.getPosition());
+		return pos.equals(nextPos);
 	}
 
-	public boolean isInterrupted() {
-		return this.interrupted;
-	}
-
-	public void setInterruption(boolean flag) {
-		this.interrupted = flag;
-	}
-
+	/*
+	 * Check whether this unit is sprinting.
+	 */
 	public boolean isSprinting() {
 		return this.movement == "Sprinting";
 	}
 
+	/*
+	 * Set this units movement status to sprinting.
+	 */
 	public void startSprinting() {
 		if (this.getStamina() > 0)
 			this.movement = "Sprinting";
 	}
 
+	/*
+	 * Stop this unit from sprinting.
+	 */
 	public void stopSprinting() {
 		this.movement = "Walking";
 	}
 
+	/*
+	 * Check whether this unit is idle.
+	 */
 	public boolean isIdle() {
 		return this.getStatus() == "Idle";
 	}
 
+	/*
+	 * Check whether this unit is moving.
+	 */
 	public boolean isMoving() {
 		return this.getStatus() == "Moving";
 	}
 
+	/*
+	 * Check whether this unit is working.
+	 */
 	public boolean isWorking() {
 		return this.getStatus() == "Working";
 	}
 
+	/*
+	 * Check whether this unit is attacking another unit.
+	 */
 	public boolean isAttacking() {
 		return this.getStatus() == "Attacking";
 	}
 
+	/*
+	 * Check whether this unit is defending itself.
+	 */
 	public boolean isDefending() {
 		return this.getStatus() == "Defending";
 	}
 
+	/*
+	 * Check whether this unit is resting.
+	 */
 	public boolean isResting() {
 		return this.getStatus() == "Resting";
 	}
-
+	
+	/*
+	 * Check whether this unit is in its initial resting phase.
+	 */
 	public boolean isInitResting() {
 		return this.getStatus() == "InitResting";
 	}
-
+	
+	/*
+	 * Check whether default behavior for this unit is enabled.
+	 */
 	public boolean isDefaultBehaviorEnabled() {
 		return this.enableDefaultBehavior;
 	}
 
+	/*
+	 * Set the boolean 'enableDefaultBehavior' of this unit to the given boolean value.
+	 */
 	public void setDefaultBehaviorEnabled(boolean value) {
 		this.enableDefaultBehavior = value;
 	}
@@ -1201,6 +1191,9 @@ public class Unit {
 		}
 	}
 
+	/**
+	 * Disable default behavior for this unit.
+	 */
 	public void stopDefaultBehavior() {
 		this.setDefaultBehaviorEnabled(false);
 	}

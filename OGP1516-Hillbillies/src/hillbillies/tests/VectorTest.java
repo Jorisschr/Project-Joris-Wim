@@ -17,6 +17,7 @@ public class VectorTest {
 	private static final Vector3d v3 = new Vector3d(new double[] {1, 2, 3});
 	private static final Vector3d v4 = new Vector3d(-1, -2, -3);
 	private static final Vector3d v5 = new Vector3d(new double[] {2, 4, 6});
+	private static final Vector3d intv = new Vector3d((int) 1, (int) 1, (int) 1);
 	private static final Vector3d nullVector = new Vector3d (0, 0, 0);
 
 	
@@ -98,6 +99,7 @@ public class VectorTest {
 	@Test
 	public void testCalcNorm() {
 		assert(v1.calcNorm() == Math.sqrt(14));
+		assert(intv.calcNorm() == Math.sqrt(3));
 	}
 	
 	@Test
