@@ -1,5 +1,7 @@
 package hillbillies.model;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import helperclasses.*;
 import hillbillies.part2.listener.TerrainChangeListener;
 import hillbillies.util.ConnectedToBorder;
@@ -47,6 +49,8 @@ public class World {
 		this.connections = new ConnectedToBorder(this.getNbCubesX(),
 												this.getNbCubesY(),
 												this.getNbCubesZ());
+		
+		this.nbUnits = 0;
 	}
 	
 	public static double getLowerBound() {
@@ -69,6 +73,9 @@ public class World {
 	 */
 	private static final double UPPER_BOUND = 49.5;
 	
+	private static final int MAX_UNITS = 100;
+	private static final int MAX_FACTIONS = 5;
+	
 	private int[][][] terrain;
 	
 	/*
@@ -90,6 +97,11 @@ public class World {
 	 * Variable registering
 	 */
 	private ConnectedToBorder connections;
+	
+	/*
+	 * Variable registering the amount living units in this world.
+	 */
+	private int nbUnits;
 
 	/*
 	 * Return the number of cubes in the world in the x-direction.
@@ -171,5 +183,43 @@ public class World {
 	 */
 	public boolean isSolidConnectedToBorder(int x, int y, int z) {
 		return connections.isSolidConnectedToBorder(x, y, z);
+	}
+	
+	/*
+	 * Return the amount of living units in this world.
+	 */
+	public int getNbUnits() {
+		return this.nbUnits;
+	}
+	
+	/*
+	 * Set the number of living units in this world to nb.
+	 * 
+	 * @param	nb
+	 * 			The new number of living units.
+	 */
+	public void setNbUnits(int nb) {
+		this.nbUnits = nb;
+	}
+	
+	public Unit spawnUnit(boolean enableDefaultBehavior) {
+		
+		if (this.getNbUnits() < MAX_UNITS) {
+			this.setNbUnits(this.getNbUnits() + 1);
+			String name = "Hillbilly";
+			int[] pos = this.getRndValidPos();
+			int weight = ThreadLocalRandom.current().nextInt(25, 100 + 1);
+			int agility = ThreadLocalRandom.current().nextInt(25, 100 + 1);
+			int strength = ThreadLocalRandom.current().nextInt(25, 100 + 1);
+			int toughness = ThreadLocalRandom.current().nextInt(25, 100 + 1);
+						
+			return new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
+		}
+		// hoe niks doen als er al 100 unit zijn?
+	}
+	
+	private int[] getRndValidPos() {
+		// hoe efficiënt een random valid position vinden?
+		return new int[] {0, 0, 0};
 	}
 }
