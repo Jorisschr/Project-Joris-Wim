@@ -86,7 +86,7 @@ public class Vector3d {
 		double[] vector = this.getDouble();
 		return vector[dimension];
 	}
-	
+
 	/**
 	 * Return a double array with the coordinates of this vector in the right order: {X,Y,Z}
 	 * @return  An array of three doubles with the coordinates of this vector.
@@ -95,7 +95,7 @@ public class Vector3d {
 		double[] vector = {this.getX(),this.getY(),this.getZ()};
 		return vector;
 	}
-	
+
 	/**
 	 * Set the x coordinate of this vector to the given value.
 	 * 
@@ -126,6 +126,91 @@ public class Vector3d {
 		this.z = z;
 	}
 	
+	/**
+	 * Return a new vector with as coordinates the sum of this and the other vector.
+	 * 
+	 * @param 	other
+	 * 			The vector to add.
+	 */
+	public Vector3d add(Vector3d other) {
+		return new Vector3d(this.getX() + other.getX(), 
+							this.getY() + other.getY(), 
+							this.getZ() + other.getZ());
+	}
+
+	/**
+	 * Return a new vector with as coordinates the subtraction of this and the other vector.
+	 * 
+	 * @param 	other
+	 * 			The vector to subtract.
+	 */
+	public Vector3d subtract(Vector3d other) {
+		return new Vector3d(this.getX() - other.getX(),
+							this.getY() - other.getY(),
+							this.getZ() - other.getZ());
+	}
+
+	/**
+	 * Multiply all coordinates of this vector by the given double precision number a.
+	 * 
+	 * @param 	a
+	 * 			The double with which every coordinate of this vector will be multiplied.
+	 */
+	public Vector3d multiply(double a) {
+		return new Vector3d(this.getX() * a, this.getY() * a, this.getZ() * a);
+	}
+
+	/**
+	 * Divide all coordinates of this vector by the given double precision number a.
+	 * 
+	 * @param 	a
+	 * 			The double by which every coordinate of this vector will be divided.
+	 */
+	public Vector3d divide(double a) {
+		if (a != 0) {
+			return new Vector3d(this.getX() / a, this.getY() / a, this.getZ() / a);
+		}
+		return this;
+	}
+
+	/**
+	 * Return the scalar product of this vector and the given other vector.
+	 * 
+	 * @param 	other
+	 * 			The other vector needed to calculate the scalar product.
+	 * @return
+	 */
+	public double scalarProduct(Vector3d other) {
+		return (this.getX() * other.getX() +
+				this.getY() * other.getY() +
+				this.getZ() * other.getZ());
+	}
+
+	/**
+	 * Return the cross product of this vector with the given other vector.
+	 * 
+	 * @param 	other
+	 * 			The other vector on the right hand side of the cross product.
+	 */
+	public Vector3d crossProduct(Vector3d other) {
+		return new Vector3d((this.getY() * other.getZ()) - (this.getZ() * other.getY()),
+							(this.getZ() * other.getX()) - (this.getX() * other.getZ()),
+							(this.getX() * other.getY()) - (this.getY() * other.getX()));
+	}
+
+	/**
+	 * Check whether this vector is equal to the given other vector.
+	 * 
+	 * @param 	other
+	 * 			The vector with which this vector will be compared.
+	 * @return	True if and only if all corresponding coordinates of the given vectors are equal.
+	 */
+	public boolean equals(Vector3d other) {
+		return ((this.getX() == other.getX()) && 
+				(this.getY() == other.getY()) && 
+				(this.getZ() == other.getZ()));
+	}
+
 	/**
 	 * Check whether this vector is a null vector.
 	 */
@@ -174,76 +259,5 @@ public class Vector3d {
 			}
 		}
 		return true;
-	}
-	
-	/**
-	 * Return a new vector with as coordinates the sum of this and the other vector.
-	 * 
-	 * @param 	other
-	 * 			The vector to add.
-	 */
-	public Vector3d add(Vector3d other) {
-		return new Vector3d(this.getX() + other.getX(), 
-							this.getY() + other.getY(), 
-							this.getZ() + other.getZ());
-	}
-	
-	/**
-	 * Return a new vector with as coordinates the subtraction of this and the other vector.
-	 * 
-	 * @param 	other
-	 * 			The vector to subtract.
-	 */
-	public Vector3d subtract(Vector3d other) {
-		return new Vector3d(this.getX() - other.getX(),
-							this.getY() - other.getY(),
-							this.getZ() - other.getZ());
-	}
-	
-	/**
-	 * Multiply all coordinates of this vector by the given double precision number a.
-	 * 
-	 * @param 	a
-	 * 			The double with which every coordinate of this vector will be multiplied.
-	 */
-	public Vector3d multiply(double a) {
-		return new Vector3d(this.getX() * a, this.getY() * a, this.getZ() * a);
-	}
-	
-	/**
-	 * Divide all coordinates of this vector by the given double precision number a.
-	 * 
-	 * @param 	a
-	 * 			The double by which every coordinate of this vector will be divided.
-	 */
-	public Vector3d divide(double a) {
-		if (a != 0) {
-			return new Vector3d(this.getX() / a, this.getY() / a, this.getZ() / a);
-		}
-		return this;
-	}
-	
-	/**
-	 * Return the scalar product of this vector and the given other vector.
-	 * 
-	 * @param 	other
-	 * 			The other vector needed to calculate the scalar product.
-	 * @return
-	 */
-	public double scalarProduct(Vector3d other) {
-		return (this.getX() * other.getX() +
-				this.getY() * other.getY() +
-				this.getZ() * other.getZ());
-	}
-	/**
-	 * Return the cross product of this vector with the given other vector.
-	 * 
-	 * @param 	other
-	 * 			The other vector on the right hand side of the cross product.
-	 */
-	public Vector3d crossProduct(Vector3d other) {
-		return new Vector3d((this.getY() * other.getZ()) - (this.getZ() * other.getY()),
-							(this.getZ() * other.getX()) - (this.getX() * other.getZ()),
-							(this.getX() * other.getY()) - (this.getY() * other.getX()));
-	}
+	}	
 }
