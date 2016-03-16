@@ -179,7 +179,7 @@ public class World {
 	public static boolean isSolid(Vector3d position) {
 		//TODO: wat is welk blok-type? Ik heb nu gewoon een check met 0 als het air is.
 		return(getCubeType(position.getCube()) != 0);
-	{
+	}
 	/**
 	 * Returns whether the cube at the given position is a solid cube that is
 	 * connected to a border of the world through other directly adjacent solid
@@ -227,9 +227,19 @@ public class World {
 			int strength = ThreadLocalRandom.current().nextInt(25, 100 + 1);
 			int toughness = ThreadLocalRandom.current().nextInt(25, 100 + 1);
 						
-			return new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
+			try {
+				return new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (OutOfBoundsException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		// hoe niks doen als er al 100 unit zijn?
+		// exception maken in Unit denk ik.
+		return null;
 	}
 	
 	private int[] getRndValidPos() {
