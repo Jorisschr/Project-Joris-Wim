@@ -67,6 +67,14 @@ public class Vector3d {
 	}
 	
 	/**
+	 * Initialize a new three dimensional vector with 0 on all the coordinates
+	 */
+	public Vector3d(){
+		this.x = 0;
+		this.y = 0;
+		this.y = 0;
+	}
+	/**
 	 * Variable registering the x-coordinate of this vector.
 	 */
 	private double x;
@@ -134,6 +142,11 @@ public class Vector3d {
 		Vector3d cube = new Vector3d(Math.floor(this.getX()), Math.floor(this.getY()), Math.floor(this.getZ()));
 		return cube;
 	}
+	
+	public int[] getInt(){
+		int[] ret = {(int) this.getX(), (int) this.getY(), (int) this.getZ()};
+		return ret;
+	}
 	/**
 	 * Set the x coordinate of this vector to the given value.
 	 * 
@@ -164,6 +177,14 @@ public class Vector3d {
 		this.z = z;
 	}
 	
+	public void setDimension(int i, double value) {
+		switch(i){
+		case 0: this.x = value;
+		case 1: this.y = value;
+		case 2: this.z = value;
+		}
+	}
+
 	/**
 	 * Return a new vector with as coordinates the sum of this and the other vector.
 	 * 
@@ -293,7 +314,7 @@ public class Vector3d {
 		return this;
 	}
 	
-	public boolean isValidPosition(double[] position) {
+	public static boolean isValidPosition(double[] position) {
 		for (int i = 0; i < position.length; i++) {
 			if ((position[i] < World.getLowerBound()) || (position[i] > World.getUpperBound())) {
 				return false;

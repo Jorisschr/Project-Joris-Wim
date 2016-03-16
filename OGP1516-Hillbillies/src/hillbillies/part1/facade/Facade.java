@@ -8,13 +8,13 @@ import hillbillies.model.Unit;
 public class Facade implements IFacade {
 	public Facade(){		
 	}
-	
 
 	@Override
 	public Unit createUnit(String name, int[] initialPosition, int weight, int agility, int strength, int toughness,
 			boolean enableDefaultBehavior) throws ModelException {
+		Vector3d initialpos = new Vector3d(initialPosition);
 		try {
-			return new Unit(name, initialPosition, weight, agility, strength, toughness, enableDefaultBehavior);
+			return new Unit(name, initialpos, weight, agility, strength, toughness, enableDefaultBehavior);
 		} catch (IllegalArgumentException e) {
 			throw new ModelException();
 		} catch (OutOfBoundsException e) {
@@ -24,12 +24,12 @@ public class Facade implements IFacade {
 	
 	@Override
 	public double[] getPosition(Unit unit) throws ModelException {
-		return unit.getPosition();
+		return unit.getPosition().getDouble();
 	}
 	
 	@Override
 	public int[] getCubeCoordinate(Unit unit) throws ModelException {
-		return unit.getCube();
+		return unit.getPosition().getCube().getInt();
 	}
 	
 	@Override
@@ -150,7 +150,7 @@ public class Facade implements IFacade {
 	
 	@Override
 	public void moveTo(Unit unit, int[] cube) throws ModelException {
-		unit.moveTo(cube);
+		unit.moveTo(new Vector3d(cube));
 	}
 	
 	@Override

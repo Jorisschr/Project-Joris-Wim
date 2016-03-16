@@ -1,5 +1,6 @@
 package hillbillies.model;
 
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import helperclasses.*;
@@ -221,7 +222,7 @@ public class World {
 		if (this.getNbUnits() < MAX_UNITS) {
 			this.setNbUnits(this.getNbUnits() + 1);
 			String name = "Hillbilly";
-			int[] pos = this.getRndValidPos();
+			Vector3d pos = this.getRndValidPos();
 			int weight = ThreadLocalRandom.current().nextInt(25, 100 + 1);
 			int agility = ThreadLocalRandom.current().nextInt(25, 100 + 1);
 			int strength = ThreadLocalRandom.current().nextInt(25, 100 + 1);
@@ -242,8 +243,15 @@ public class World {
 		return null;
 	}
 	
-	private int[] getRndValidPos() {
-		// hoe efficiënt een random valid position vinden?
-		return new int[] {0, 0, 0};
+	private Vector3d getRndValidPos() {
+		Random r = new Random();
+		Vector3d rndPos = new Vector3d();
+		
+		for (int i=0;i<2;i++){
+
+			rndPos.setDimension(i,  r.nextInt((int)(World.LOWER_BOUND - World.UPPER_BOUND) + 1) + World.LOWER_BOUND);
+		}
+	    
+		return new Vector3d();
 	}
 }

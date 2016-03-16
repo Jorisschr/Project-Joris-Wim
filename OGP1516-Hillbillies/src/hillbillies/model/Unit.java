@@ -51,13 +51,14 @@ public class Unit {
 	 *             This new unit cannot have the given name as its name. | !
 	 *             canHaveAsName(this.getName())
 	 */
-	public Unit(String name, int[] position, int weight, int agility, int strength, int toughness,
+	public Unit(String name, Vector3d position, int weight, int agility, int strength, int toughness,
 			boolean enableDefaultBehavior) throws OutOfBoundsException, IllegalArgumentException {
-
-		double[] pos = { (double) position[0] + 0.5, (double) position[1] + 0.5, (double) position[2] + 0.5 };
-		if (!isValidPosition(pos)) {
+		
+		double[] cube = position.getCube().getDouble();
+		Vector3d pos = new Vector3d( (double) cube[0] + 0.5, (double) cube[1] + 0.5, (double) cube[2] + 0.5 );
+		if (!pos.isValidPosition()) {
 			// display message?
-			throw new OutOfBoundsException(pos);
+			throw new OutOfBoundsException(pos.getDouble());
 		}
 
 		if (!canHaveAsName(name)) {
@@ -103,7 +104,7 @@ public class Unit {
 		this.velocity = new Vector3d(0, 0, 0);
 		this.activityProgress = 0;
 		this.timeNeeded = 0;
-		this.destination = new int[] {-1, -1, -1};
+		this.destination = new Vector3d(-1,-1,-1);
 		this.nextPosition = this.getPosition();
 		this.movingTime = 0;
 		this.sprintingTime = 0;
@@ -115,7 +116,7 @@ public class Unit {
 	/**
 	 * Variable registering the position of this unit.
 	 */
-	private double[] position;
+	private Vector3d position;
 
 	/**
 	 * Variable registering the name of this unit.
@@ -186,9 +187,9 @@ public class Unit {
 
 	private double timeNeeded;
 
-	private int[] destination;
+	private Vector3d destination;
 
-	private double[] nextPosition;
+	private Vector3d nextPosition;
 	
 	private double movingTime;
 	
@@ -204,16 +205,16 @@ public class Unit {
 	 * Return the position of this unit.
 	 */
 	@Basic
-	public double[] getPosition() {
+	public Vector3d getPosition() {
 		return this.position;
 	}
 	
 	public int[] getOccupyingCube(){
-		double[] curPos = this.getPosition();
+		Vector3d curPos = this.getPosition();
 		int[] cube = {0,0,0};
 		
 		for(int i = 0; i<3; i++){
-			cube[i] = (int) Math.floor(curPos[i]);
+			cube[i] = (int) Math.floor(curPos.getDouble()[i]);
 		}
 		
 		return cube;
@@ -227,10 +228,11 @@ public class Unit {
 	 * 		   | result == (distance < sqrt(2))
 	 */
 	public boolean isAdjacentTo(Unit other){
-		Vector3d thisPos = new Vector3d(this.getCube());
-		Vector3d otherPos = new Vector3d(other.getCube());
+		
+		Vector3d thisCube = this.getPosition().getCube();
+		Vector3d otherCube = this.getPosition().getCube();
 
-		return (thisPos.subtract(otherPos).calcNorm() <= Math.sqrt(2));
+		return (thisCube.subtract(otherCube).calcNorm() <= Math.sqrt(2));
 
 	}
 	
@@ -244,17 +246,10 @@ public class Unit {
 	 *         upper bound. | result == (for (int i = 0; i < position.length;) |
 	 *         ((position[i] > LOWER_BOUND) && | (position[i] < UPPER_BOUND)))
 	 */
-	public boolean isValidPosition(double[] position) {
-		for (int i = 0; i < position.length; i++) {
-			if ((position[i] < World.getLowerBound()) || (position[i] > World.getUpperBound())) {
-				return false;
-			}
-		}
-		return true;
-	}
 
-	private void setPosition(double[] newPos) {
-		if (isValidPosition(newPos)) {
+
+	private void setPosition(Vector3d newPos) {
+		if (newPos.isValidPosition()) {
 			this.position = newPos;
 		}
 	}
@@ -305,17 +300,6 @@ public class Unit {
 
 	public boolean isWithinRange(int value) {
 		return ((value >= 25) && (value <= 100));
-	}
-
-	/**
-	 * Return the position of the cube occupied by this unit.
-	 */
-	public int[] getCube() {
-		int[] cubeposition = new int[3];
-		for (int i = 0; i < cubeposition.length; i++) {
-			cubeposition[i] = (int) this.position[i];
-		}
-		return cubeposition;
 	}
 
 	/**
@@ -584,11 +568,11 @@ public class Unit {
 		this.activityProgress = progress;
 	}
 
-	public int[] getDestination() {
+	public Vector3d getDestination() {
 		return this.destination;
 	}
 
-	public void setDestination(int[] destination) {
+	public void setDestination(Vector3d destination) {
 		this.destination = destination;
 	}
 
@@ -628,11 +612,11 @@ public class Unit {
 		this.counter = time;
 	}
 
-	public double[] getNextPosition() {
+	public Vector3d getNextPosition() {
 		return this.nextPosition;
 	}
 
-	public void setNextPosition(double[] nextPosition) {
+	public void setNextPosition(Vector3d nextPosition) {
 		this.nextPosition = nextPosition;
 	}
 	
@@ -720,10 +704,10 @@ public class Unit {
 		// TODO: exceptions for when two units are from the same faction.
 		// TODO: look again at orientation: not yet on point (see tests: put 9 units in a square and make the centre unit fight everyone else).
 		if (this.isAdjacentTo(defender)){
-			float attackerOr = (float) Math.atan2(defender.getPosition()[1] - this.getPosition()[1],
-                    defender.getPosition()[0] - this.getPosition()[0]);
-			float defenderOr = (float) Math.atan2(this.getPosition()[1] - defender.getPosition()[1],
-                    this.getPosition()[0] - defender.getPosition()[0]);
+			float attackerOr = (float) Math.atan2(defender.getPosition().getY() - this.getPosition().getY(),
+                    defender.getPosition().getX() - this.getPosition().getX());
+			float defenderOr = (float) Math.atan2(this.getPosition().getY() - defender.getPosition().getY(),
+                    this.getPosition().getX() - defender.getPosition().getX());
 			this.setOrientation(attackerOr);
 			defender.setOrientation(defenderOr);
 
@@ -765,21 +749,21 @@ public class Unit {
 		boolean dodged = (new Random().nextDouble() <= dodgeProb);
 
 		if (dodged == true) {
-			double[] pos = this.getPosition();
-			double[] evasion = { 0, 0, 0 };
+			Vector3d pos = this.getPosition();
+			Vector3d evasion = new Vector3d();
 			boolean foundNewPos = false;
 			 while (foundNewPos == false) {
 				for (int i = 0; i < 2; i++) {
 
 					double plus = new Random().nextDouble();
 					double randomValue = -1 + 2 * plus;
-					evasion[i] = randomValue;
+					evasion.setDimension(i,randomValue);
 				}
-				double[] newPos = new double[3];
+				Vector3d newPos = new Vector3d();
 
-				for (int i = 0; i < pos.length; i++)
+				for (int i = 0; i < 2; i++)
 
-					newPos[i] = pos[i] + evasion[i];
+					newPos.setDimension(i, pos.getDimension(i) + evasion.getDimension(i));
 				foundNewPos = true;
 				// TODO create passable terrain check in World class
 				this.setPosition(newPos);
@@ -863,7 +847,7 @@ public class Unit {
 		}
 	}
 
-	/*
+	/**
 	 * Initiate working for this unit.
 	 */
 	public void work() {
@@ -874,6 +858,13 @@ public class Unit {
 			this.setTimeNeeded();
 		}
 	}
+	
+	public void workDone(){
+		this.setActivityProgress(0);
+		this.setStatus("Idle");
+			
+	}
+
 
 	/**
 	 * Advance a unit's game time and update it's position, attributes and status 
@@ -910,9 +901,9 @@ public class Unit {
 			
 			this.updatePosition(dt);
 			if (this.getPosition() == this.getNextPosition()) {
-				if ((this.destinationReached()) || (this.getDestination()[0] == -1)) {				
+				if ((this.destinationReached()) || (this.getDestination().getX() == -1)) {				
 					this.setStatus("Idle");	
-					this.setDestination(new int[] {-1, -1, -1});
+					this.setDestination(new Vector3d(-1,-1,-1));
 				}
 				else {
 					this.moveTo(this.getDestination());
@@ -934,9 +925,8 @@ public class Unit {
 			// if work is finished, change game world.
 			this.setActivityProgress(this.getActivityProgress() + dt);
 			if (this.getActivityProgress() >= this.getTimeNeeded()) {
-				// break log / rock
-				this.setActivityProgress(0);
-				this.setStatus("Idle");
+				this.workDone();
+				
 				int curXP = this.getExperience();
 				this.setXP (curXP + 10);
 			}
@@ -982,12 +972,12 @@ public class Unit {
 	 * destination and advanced time dt.
 	 */
 	public void updatePosition(double dt) {
-		double[] oldPos = this.getPosition();
+		Vector3d oldPos = this.getPosition();
 		double[] velocity = this.getVelocity();
 
-		double[] newPos = { oldPos[0] + (dt * velocity[0]),
-							oldPos[1] + (dt * velocity[1]),
-							oldPos[2] + (dt * velocity[2])};
+		Vector3d newPos = new Vector3d(oldPos.getX() + (dt * velocity[0]),
+							oldPos.getY() + (dt * velocity[1]),
+							oldPos.getZ() + (dt * velocity[2]));
 		
 		if (this.getMovingTime() >= this.getTimeNeeded()) {
 			this.setPosition(this.getNextPosition());
@@ -1004,7 +994,7 @@ public class Unit {
 	 * @param destination
 	 *            The new location to which the unit has to move.
 	 */
-	public void moveTo(int[] location) {
+	public void moveTo(Vector3d  location) {
 		if (this.canBeInterrupted("Moving"))
 			this.setStatus("Moving");
 		
@@ -1014,9 +1004,9 @@ public class Unit {
 
 		for (int i = 0; i < 3; i++) {
 
-			if (this.getCube()[i] == location[i]) {
+			if (this.getPosition().getCube().getDimension(i) == location.getDimension(i)) {
 				nextPos[i] = 0;
-			} else if (this.getCube()[i] < location[i]) {
+			} else if (this.getPosition().getCube().getDimension(i) < location.getDimension(i)) {
 				nextPos[i] = 1;
 			} else {
 				nextPos[i] = -1;
@@ -1033,7 +1023,7 @@ public class Unit {
 	 *            The adjacent cube to which this unit has to move.
 	 */
 	public void moveToAdjacent(Vector3d vector) {	
-		Vector3d oldPos = new Vector3d(this.getCube());	
+		Vector3d oldPos = this.getPosition().getCube();	
 		Vector3d nextPos = oldPos.add(0.5).add(vector);
 
 		if (this.getWaitingTo() == "Resting")
@@ -1041,9 +1031,9 @@ public class Unit {
 		
 		if (this.canBeInterrupted("Moving")) {
 			this.setStatus("Moving");
-			if(isValidPosition(nextPos.getDouble())) {
+			if(Vector3d.isValidPosition(nextPos.getDouble())) {
 				if(this.nextPositionReached()) {
-					this.setNextPosition(nextPos.getDouble());
+					this.setNextPosition(nextPos);
 					this.setSpeed((int) vector.getZ());
 					this.setVelocity(this.calcVelocity(vector));			
 					this.setTimeNeeded(vector.calcNorm() / this.getCurrentSpeed());
@@ -1064,8 +1054,8 @@ public class Unit {
 	 * Check whether the unit has reached its destination.
 	 */
 	public boolean destinationReached() {
-		Vector3d dest = new Vector3d(this.getDestination());
-		Vector3d pos = new Vector3d(this.getPosition());
+		Vector3d dest = this.getDestination();
+		Vector3d pos = this.getPosition();
 		
 		if (!pos.equals(dest.add(0.5))) {
 			return false;
@@ -1077,8 +1067,8 @@ public class Unit {
 	 * Check whether the unit has reached a neighboring cube.
 	 */
 	public boolean nextPositionReached() {
-		Vector3d nextPos = new Vector3d(this.getNextPosition());
-		Vector3d pos = new Vector3d(this.getPosition());
+		Vector3d nextPos = this.getNextPosition();
+		Vector3d pos = this.getPosition();
 		return pos.equals(nextPos);
 	}
 
@@ -1176,7 +1166,7 @@ public class Unit {
 	public void startDefaultBehavior() {
 		if ((this.isIdle()) && (this.isDefaultBehaviorEnabled())) {
 			int rnd = ThreadLocalRandom.current().nextInt(0, 2 + 1);
-			int[] randomLoc = new int[3];
+			Vector3d randomLoc = new Vector3d();
 
 			if (rnd == 0) {
 				this.work();
@@ -1184,7 +1174,7 @@ public class Unit {
 				this.rest();
 			} else if (rnd == 2) {
 				for (int i = 0; i < 2; i++) {
-					randomLoc[i] = ThreadLocalRandom.current().nextInt(0, 49 + 1);
+					randomLoc.setDimension(i, ThreadLocalRandom.current().nextInt(0, 49 + 1));
 				}
 				this.moveTo(randomLoc);
 			}
