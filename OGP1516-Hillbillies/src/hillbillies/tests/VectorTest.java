@@ -60,9 +60,9 @@ public class VectorTest {
 	}
 	
 	@Test
-	public void testGetDouble() {
-		assert(v2.equals(new Vector3d(v2.getDouble())));
-		assert(nullVector.equals(new Vector3d(nullVector.getDouble())));
+	public void testGetDoubleArray() {
+		assert(v2.equals(new Vector3d(v2.getDoubleArray())));
+		assert(nullVector.equals(new Vector3d(nullVector.getDoubleArray())));
 	}
 	
 	@Test

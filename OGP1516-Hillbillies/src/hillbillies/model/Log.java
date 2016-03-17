@@ -3,7 +3,7 @@ package hillbillies.model;
 import helperclasses.OutOfBoundsException;
 import helperclasses.Vector3d;
 
-public class Log extends Object {
+public class Log extends GameObject {
 	/**
 	 * Initialize a new Log on a given location with a random weight 
 	 * between 10 and 50, inclusively

@@ -54,11 +54,11 @@ public class Unit {
 	public Unit(String name, Vector3d position, int weight, int agility, int strength, int toughness,
 			boolean enableDefaultBehavior) throws OutOfBoundsException, IllegalArgumentException {
 		
-		double[] cube = position.getCube().getDouble();
+		double[] cube = position.getCube().getDoubleArray();
 		Vector3d pos = new Vector3d( (double) cube[0] + 0.5, (double) cube[1] + 0.5, (double) cube[2] + 0.5 );
 		if (!pos.isValidPosition()) {
 			// display message?
-			throw new OutOfBoundsException(pos.getDouble());
+			throw new OutOfBoundsException(pos.getDoubleArray());
 		}
 
 		if (!canHaveAsName(name)) {
@@ -210,15 +210,16 @@ public class Unit {
 	}
 	
 	public int[] getOccupyingCube(){
-		Vector3d curPos = this.getPosition();
-		int[] cube = {0,0,0};
-		
-		for(int i = 0; i<3; i++){
-			cube[i] = (int) Math.floor(curPos.getDouble()[i]);
-		}
-		
-		return cube;
+		return this.getPosition().getIntArray();
 	}
+	
+	/**
+	 * Return the position of the cube occupied by this position.
+	 */
+	public int[] getCube(Vector3d position) {
+		return position.getIntArray();
+	}
+
 	/**
 	 * Check if two units are in the same or a neighboring cube.
 	 * 
@@ -300,17 +301,6 @@ public class Unit {
 
 	public boolean isWithinRange(int value) {
 		return ((value >= 25) && (value <= 100));
-	}
-
-	/**
-	 * Return the position of the cube occupied by this position.
-	 */
-	public int[] getCube(double[] position) {
-		int[] cubeposition = new int[3];
-		for (int i = 0; i < cubeposition.length; i++) {
-			cubeposition[i] = (int) position[i];
-		}
-		return cubeposition;
 	}
 
 	/**
@@ -666,7 +656,7 @@ public class Unit {
 	 * Return the velocity of a Unit.
 	 */
 	public double[] getVelocity() {
-		return this.velocity.getDouble();
+		return this.velocity.getDoubleArray();
 	}
 
 	/**
@@ -1031,7 +1021,7 @@ public class Unit {
 		
 		if (this.canBeInterrupted("Moving")) {
 			this.setStatus("Moving");
-			if(Vector3d.isValidPosition(nextPos.getDouble())) {
+			if(nextPos.isValidPosition(nextPos.getDoubleArray())) {
 				if(this.nextPositionReached()) {
 					this.setNextPosition(nextPos);
 					this.setSpeed((int) vector.getZ());

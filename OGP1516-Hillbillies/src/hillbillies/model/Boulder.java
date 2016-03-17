@@ -3,7 +3,7 @@ package hillbillies.model;
 import helperclasses.OutOfBoundsException;
 import helperclasses.Vector3d;
 
-public class Boulder extends Object {
+public class Boulder extends GameObject {
 	/**
 	 * Initialize a new Boulder on a given location with a random weight 
 	 * between 10 and 50, inclusively

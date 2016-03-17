@@ -1,5 +1,7 @@
 package helperclasses;
 
+import java.util.Random;
+
 import hillbillies.model.World;
 
 public class Vector3d {
@@ -74,6 +76,7 @@ public class Vector3d {
 		this.y = 0;
 		this.y = 0;
 	}
+	
 	/**
 	 * Variable registering the x-coordinate of this vector.
 	 */
@@ -122,18 +125,37 @@ public class Vector3d {
 	 * 			| dimension = 2
 	 */
 	public double getDimension(int dimension){
-		double[] vector = this.getDouble();
+		double[] vector = this.getDoubleArray();
 		return vector[dimension];
 	}
 
 	/**
-	 * Return a double array with the coordinates of this vector in the right order: {X,Y,Z}
+	 * Return a double array with the coordinates of this vector in the right order: {X, Y, Z}
+	 * 
 	 * @return  An array of three doubles with the coordinates of this vector.
 	 */
-	public double[] getDouble(){
-		double[] vector = {this.getX(),this.getY(),this.getZ()};
-		return vector;
+	public double[] getDoubleArray() {
+		return new double[] {this.getX(),this.getY(),this.getZ()};
 	}
+	
+	public void setDimension(int i, double value) {
+		switch(i){
+		case 0: this.x = value;
+		case 1: this.y = value;
+		case 2: this.z = value;
+		}
+	}
+	
+	/**
+	 * Return an int array with the coordinates of this vector rounded down and
+	 * in their general order {X, Y, Z}
+	 * 
+	 * @return An array of three integers with the coordinates of this vector rounded down.
+	 */
+	public int[] getIntArray() {
+		return new int[] {(int) this.getX(), (int) this.getY(), (int) this.getZ()};
+	}
+	
 	/**
 	 * Return a vector containing the floor of every coordinate of this vector. 
 	 * @ return  A new Vector3d with three doubles as it's coordinates, which are the floor of the old Vector3d
@@ -141,11 +163,6 @@ public class Vector3d {
 	public Vector3d getCube(){
 		Vector3d cube = new Vector3d(Math.floor(this.getX()), Math.floor(this.getY()), Math.floor(this.getZ()));
 		return cube;
-	}
-	
-	public int[] getInt(){
-		int[] ret = {(int) this.getX(), (int) this.getY(), (int) this.getZ()};
-		return ret;
 	}
 	/**
 	 * Set the x coordinate of this vector to the given value.
@@ -177,14 +194,6 @@ public class Vector3d {
 		this.z = z;
 	}
 	
-	public void setDimension(int i, double value) {
-		switch(i){
-		case 0: this.x = value;
-		case 1: this.y = value;
-		case 2: this.z = value;
-		}
-	}
-
 	/**
 	 * Return a new vector with as coordinates the sum of this and the other vector.
 	 * 
@@ -314,9 +323,9 @@ public class Vector3d {
 		return this;
 	}
 	
-	public static boolean isValidPosition(double[] position) {
+	public boolean isValidPosition(double[] position) {
 		for (int i = 0; i < position.length; i++) {
-			if ((position[i] < World.getLowerBound()) || (position[i] > World.getUpperBound())) {
+			if ((position[i] < 0.5) || (position[i] > 49.5)) {
 				return false;
 			}
 		}
@@ -327,10 +336,15 @@ public class Vector3d {
 		
 		for (int i = 0; i <= 2; i++) {
 			double coordinate = this.getDimension(i);
-			if ((coordinate < World.getLowerBound()) || (coordinate > World.getUpperBound())) {
+			if ((coordinate < 0.5) || (coordinate > 49.5)) {
 				return false;
 			}
 		}
 		return true;
 	}	
+	
+	public Vector3d genRndVector3d(int upperX, int upperY, int upperZ) {
+		Random r = new Random();
+		return new Vector3d(r.nextInt(upperX),r.nextInt(upperY),r.nextInt(upperZ));
+	}
 }

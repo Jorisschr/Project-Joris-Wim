@@ -40,8 +40,7 @@ public class World {
 	 * @throws ModelException
 	 */
 	public World(int[][][] terrainTypes, TerrainChangeListener modelListener) {
-		
-		World.terrain = terrainTypes;
+		this.terrain = terrainTypes;
 		
 		this.nbCubesX = terrainTypes.length;
 		this.nbCubesY = terrainTypes[0].length;
@@ -51,31 +50,56 @@ public class World {
 												this.getNbCubesY(),
 												this.getNbCubesZ());
 		
+		this.updateConnections();
+		
 		this.nbUnits = 0;
 	}
 	
+	private void updateConnections() {
+		
+	}
+
 	public static double getLowerBound() {
 		return LOWER_BOUND;
 	}
 
-	public static double getUpperBound() {
-		return UPPER_BOUND;
+	/*
+	 * Return the upper bound of the x dimension of this world, for any game objects position.
+	 */
+	public final double getUBX() {
+		return (this.getNbCubesX() - 0.5);
 	}
-
+	
+	/*
+	 * Return the upper bound of the y dimension of this world, for any game objects position.
+	 */
+	public final double getUBY() {
+		return (this.getNbCubesY() - 0.5);
+	}
+	
+	/*
+	 * Return the upper bound of the z dimension of this world, for any game objects position.
+	 */
+	public final double getUBZ() {
+		return (this.getNbCubesZ() - 0.5);
+	}
+	
+	public int[][][] getTerrain() {
+		return this.terrain;
+	}
 	/**
 	 * Variable registering the lower bound for the x, y and z dimensions of the
 	 * generated world.
 	 */
 	private static final double LOWER_BOUND = 0.5;
 
-	/**
-	 * Variable registering the upper bound for the x, y and z dimensions of the
-	 * generated world.
-	 */
-	private static final double UPPER_BOUND = 49.5;
-	
 	private static final int MAX_UNITS = 100;
 	private static final int MAX_FACTIONS = 5;
+	
+	private static final int TYPE_AIR = 0;
+	private static final int TYPE_ROCK = 1;
+	private static final int TYPE_TREE = 2;
+	private static final int TYPE_WORKSHOP = 3;
 	
 	private static int[][][] terrain;
 	
@@ -139,7 +163,7 @@ public class World {
 	 *         {@link #createWorld(int[][][], TerrainChangeListener)}.
 	 */
 	public int getCubeType(int x, int y, int z) {
-		return World.terrain[x][y][z];
+		return this.terrain[x][y][z];
 	}
 	
 	public static int getCubeType(Vector3d position) {
@@ -169,18 +193,19 @@ public class World {
 	 */
 	public void setCubeType(int x, int y, int z, int value) {
 		if ((value >= 0) && (value < 4)) {
-			World.terrain[x][y][z] = value;
+			this.terrain[x][y][z] = value;
 		}
 	}
+	
 	/**
 	 * Checks if this cube of this postion is a solid block.
 	 * @return  True if the World's cube at this postion is solid.
 	 * 	    | cube.getCubeType() != Air
 	 */
 	public static boolean isSolid(Vector3d position) {
-		//TODO: wat is welk blok-type? Ik heb nu gewoon een check met 0 als het air is.
-		return(getCubeType(position.getCube()) != 0);
+		return(getCubeType(position.getCube()) == 1 || (getCubeType(position.getCube()) == 2));
 	}
+	
 	/**
 	 * Returns whether the cube at the given position is a solid cube that is
 	 * connected to a border of the world through other directly adjacent solid
@@ -198,6 +223,24 @@ public class World {
 	 */
 	public boolean isSolidConnectedToBorder(int x, int y, int z) {
 		return connections.isSolidConnectedToBorder(x, y, z);
+	}
+	
+	/**
+	 * Check whether the cube at the given coordinates is passable.
+	 * 
+	 * @param 	x
+	 * 			The x coordinate of the cube to check.
+	 * @param 	y
+	 * 			The y coordinate of the cube to check.
+	 * @param 	z
+	 * 			The z coordinate of the cube to check.
+	 * @return 	True if the type of the cube to check is air or workshop, false otherwise.
+	 */
+	public boolean isPassable(int x, int y, int z) {
+		if ((this.getCubeType(x, y, z) == TYPE_AIR) || (this.getCubeType(x, y, z) == TYPE_WORKSHOP)) {
+			return true;
+		}
+		return false;
 	}
 	
 	/*
@@ -230,28 +273,60 @@ public class World {
 						
 			try {
 				return new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (OutOfBoundsException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (Throwable exc) {
+				
 			}
 		}
 		// hoe niks doen als er al 100 unit zijn?
 		// exception maken in Unit denk ik.
 		return null;
+
+	}
+	
+	public boolean posOutOfBounds(int x, int y, int z) {
+		if ((x > this.getUBX()) || (y > this.getUBY()) || (z > this.getUBZ())) {
+			return true;
+		}
+		if ((x < 0) || (y < 0) || (z < 0)) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Check whether the center of the given cube is a valid position for a game object.
+	 * 
+	 * @param 	x
+	 * 			The x coordinate of the cube to check.
+	 * @param 	y
+	 * 			The y coordinate of the cube to check.
+	 * @param 	z
+	 * 			The z coordinate of the cube to check.
+	 * @return 	True if the type of the cube to check is air or workshop, 
+	 * 			and the cube beneath the given cube is solid and connected to the world border
+	 * 			(or has z coordinate  = 0).
+	 */
+	public boolean isValidPosition(int x, int y, int z) {	
+		if (!posOutOfBounds(x, y, z)) {
+			if ((isPassable(x, y, z)) &&
+					((isSolidConnectedToBorder(x, y, z - 1)) || z == 0)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean isValidPosition(Vector3d vector) {
+		int[] pos = vector.getIntArray();
+		return isValidPosition(pos[0], pos[1], pos[2]);
 	}
 	
 	private Vector3d getRndValidPos() {
-		Random r = new Random();
-		Vector3d rndPos = new Vector3d();
+		Vector3d rndPos = new Vector3d(-1, -1, -1);
 		
-		for (int i=0;i<2;i++){
-
-			rndPos.setDimension(i,  r.nextInt((int)(World.LOWER_BOUND - World.UPPER_BOUND) + 1) + World.LOWER_BOUND);
-		}
-	    
-		return new Vector3d();
+		while (!isValidPosition(rndPos)) {
+			rndPos = rndPos.genRndVector3d((int) this.getUBX(),(int) this.getUBY(),(int) this.getUBZ());
+		}	    
+		return rndPos;
 	}
 }
