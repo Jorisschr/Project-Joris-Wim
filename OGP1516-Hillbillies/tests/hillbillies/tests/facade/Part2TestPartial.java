@@ -19,7 +19,7 @@ public class Part2TestPartial {
 	private static final int TYPE_AIR = 0;
 	private static final int TYPE_ROCK = 1;
 	private static final int TYPE_TREE = 2;
-	private static final int TYPE_WORKSHOP = 3; 
+	private static final int TYPE_WORKSHOP = 3;
 
 	@Before
 	public void setup() {

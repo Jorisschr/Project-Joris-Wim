@@ -264,7 +264,7 @@ public class World {
 		
 		if (this.getNbUnits() < MAX_UNITS) {
 			this.setNbUnits(this.getNbUnits() + 1);
-			String name = "Hillbilly";
+			String name = "Joris Test";
 			Vector3d pos = this.getRndValidPos();
 			int weight = ThreadLocalRandom.current().nextInt(25, 100 + 1);
 			int agility = ThreadLocalRandom.current().nextInt(25, 100 + 1);
@@ -308,11 +308,12 @@ public class World {
 	 */
 	public boolean isValidPosition(int x, int y, int z) {	
 		if (!posOutOfBounds(x, y, z)) {
-			if ((isPassable(x, y, z)) &&
-					((isSolidConnectedToBorder(x, y, z - 1)) || z == 0)) {
-				return true;
-			}
-		}
+			if (isPassable(x, y, z)) {
+				if ((isSolidConnectedToBorder(x, y, z - 1)) || (z == 0)) {
+					return true;
+				}
+			}					
+		}		
 		return false;
 	}
 	
