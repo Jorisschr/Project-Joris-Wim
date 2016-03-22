@@ -111,6 +111,7 @@ public class Unit {
 		this.waitingTo = null;
 		this.opponent = null;
 		this.experience = 0;
+		this.faction = new Faction();
 	}
 
 	/**
@@ -200,6 +201,8 @@ public class Unit {
 	private Unit opponent;
 	
 	private int experience;
+	
+	private Faction faction;
 	
 	/**
 	 * Return the position of this unit.
@@ -1240,6 +1243,14 @@ public class Unit {
 		}
 		
 		this.setWeight(this.getWeight());
+	}
+	
+	public Faction getFaction() {
+		return this.faction;
+	}
+	
+	public void setFaction(Faction faction) {
+		faction.addUnit(this);
 	}
 }
 

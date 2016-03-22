@@ -207,22 +207,22 @@ public class Facade implements IFacade {
 
 	@Override
 	public int getNbCubesX(World world) throws ModelException {
-		return world.getNbCubesX();
+		return world.getNbX();
 	}
 
 	@Override
 	public int getNbCubesY(World world) throws ModelException {
-		return world.getNbCubesY();
+		return world.getNbY();
 	}
 
 	@Override
 	public int getNbCubesZ(World world) throws ModelException {
-		return world.getNbCubesZ();
+		return world.getNbZ();
 	}
 
 	@Override
 	public void advanceTime(World world, double dt) throws ModelException {
-		// TODO Auto-generated method stub
+		world.advanceTime(dt);
 		
 	}
 
@@ -248,14 +248,13 @@ public class Facade implements IFacade {
 
 	@Override
 	public void addUnit(Unit unit, World world) throws ModelException {
-		// TODO Auto-generated method stub
+		world.addUnit(unit);
 		
 	}
 
 	@Override
 	public Set<Unit> getUnits(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return world.getUnits();
 	}
 
 	@Override
@@ -291,42 +290,39 @@ public class Facade implements IFacade {
 	@Override
 	public Faction getFaction(Unit unit) throws ModelException {
 		// TODO Auto-generated method stub
-		return null;
+		return unit.getFaction();
 	}
 
 	@Override
 	public Set<Unit> getUnitsOfFaction(Faction faction) throws ModelException {
 		// TODO Auto-generated method stub
-		return null;
+		return faction.getUnits();
 	}
 
 	@Override
 	public Set<Faction> getActiveFactions(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return world.getActiveFactions();
 	}
 
 	@Override
 	public double[] getPosition(Boulder boulder) throws ModelException {
 		// TODO Auto-generated method stub
-		return null;
+		return boulder.getPosition().getDoubleArray();
 	}
 
 	@Override
 	public Set<Boulder> getBoulders(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return world.getBoulders();
 	}
 
 	@Override
 	public double[] getPosition(Log log) throws ModelException {
 		// TODO Auto-generated method stub
-		return null;
+		return log.getPosition().getDoubleArray();
 	}
 
 	@Override
 	public Set<Log> getLogs(World world) throws ModelException {
-		// TODO Auto-generated method stub
-		return null;
+		return world.getLogs();
 	}
 }

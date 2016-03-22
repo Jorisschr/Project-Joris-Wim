@@ -37,6 +37,5 @@ public class Boulder extends GameObject {
 		try {
 			this.setPosition(newPos);
 		} catch (OutOfBoundsException e) {}
-	}
-	
+	}	
 }

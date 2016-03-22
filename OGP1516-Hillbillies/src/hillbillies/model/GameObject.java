@@ -27,7 +27,7 @@ public abstract class GameObject {
 	private boolean falling;
 	
 	/**
-	 * Return the weight of this game 
+	 * Return the weight of this game object.
 	 * @return this.weight
 	 */
 	public double getWeight(){
@@ -39,7 +39,7 @@ public abstract class GameObject {
 	 * @param   position
 	 * 			The new position for this  to be.
 	 * @throws  OutOfBoundsException
-	 * 			The new position is not within the boundairies of the game World.
+	 * 			The new position is not within the boundaries of the game World.
 	 * 			|!isValidPosition(position)
 	 */
 	public void setPosition(Vector3d position) throws OutOfBoundsException{

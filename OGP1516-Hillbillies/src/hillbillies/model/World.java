@@ -1,6 +1,7 @@
 package hillbillies.model;
 
-import java.util.Random;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import helperclasses.*;
@@ -36,26 +37,41 @@ public class World {
 	 *            The coordinate of the changed cube must be given in the form
 	 *            of the parameters x, y and z. You do not need to call this
 	 *            method during the construction of your world.
+	 * @param unitSet 
 	 * @return
 	 * @throws ModelException
 	 */
 	public World(int[][][] terrainTypes, TerrainChangeListener modelListener) {
-		this.terrain = terrainTypes;
+		World.terrain = terrainTypes;
 		
-		this.nbCubesX = terrainTypes.length;
-		this.nbCubesY = terrainTypes[0].length;
-		this.nbCubesZ = terrainTypes[0][0].length;
+		this.nbX = terrainTypes.length;
+		this.nbY = terrainTypes[0].length;
+		this.nbZ = terrainTypes[0][0].length;
 		
-		this.connections = new ConnectedToBorder(this.getNbCubesX(),
-												this.getNbCubesY(),
-												this.getNbCubesZ());
+		this.connections = new ConnectedToBorder(this.getNbX(),
+												this.getNbY(),
+												this.getNbZ());
 		
 		this.updateConnections();
 		
 		this.nbUnits = 0;
+		this.unitSet = Collections.emptySet();
+		this.factionSet = Collections.emptySet();
+		this.boulderSet = Collections.emptySet();
+		this.logSet = Collections.emptySet();
 	}
 	
 	private void updateConnections() {
+		for (int k = 0; k < nbZ; k++) {
+			for (int j = 0; j < nbY; j++) {
+				for (int i =0; i < nbX; i++) {
+					if ((getCubeType(i, j, k) == TYPE_AIR) || (getCubeType(i, j ,k) == TYPE_WORKSHOP)) {
+						connections.changeSolidToPassable(i, j, k);
+					}
+				}
+			}
+			
+		}
 		
 	}
 
@@ -67,25 +83,25 @@ public class World {
 	 * Return the upper bound of the x dimension of this world, for any game objects position.
 	 */
 	public final double getUBX() {
-		return (this.getNbCubesX() - 0.5);
+		return (this.getNbX() - 0.5);
 	}
 	
 	/*
 	 * Return the upper bound of the y dimension of this world, for any game objects position.
 	 */
 	public final double getUBY() {
-		return (this.getNbCubesY() - 0.5);
+		return (this.getNbY() - 0.5);
 	}
 	
 	/*
 	 * Return the upper bound of the z dimension of this world, for any game objects position.
 	 */
 	public final double getUBZ() {
-		return (this.getNbCubesZ() - 0.5);
+		return (this.getNbZ() - 0.5);
 	}
 	
 	public int[][][] getTerrain() {
-		return this.terrain;
+		return World.terrain;
 	}
 	/**
 	 * Variable registering the lower bound for the x, y and z dimensions of the
@@ -106,17 +122,17 @@ public class World {
 	/*
 	 * Variable registering the number of cubes in the world in the x-direction.
 	 */
-	private final int nbCubesX;
+	private final int nbX;
 	
 	/*
 	 * Variable registering the number of cubes in the world in the y-direction.
 	 */
-	private final int nbCubesY;
+	private final int nbY;
 	
 	/*
 	 * Variable registering the number of cubes in the world in the z-direction.
 	 */
-	private final int nbCubesZ;
+	private final int nbZ;
 	
 	/*
 	 * Variable registering
@@ -126,27 +142,31 @@ public class World {
 	/*
 	 * Variable registering the amount living units in this world.
 	 */
-	private int nbUnits;
+	private int nbUnits;	
+	private Set<Unit> unitSet;	
+	private Set<Faction> factionSet;
+	private Set<Boulder> boulderSet;
+	private Set<Log> logSet;
 
 	/*
 	 * Return the number of cubes in the world in the x-direction.
 	 */
-	public int getNbCubesX() {
-		return this.nbCubesX;
+	public int getNbX() {
+		return this.nbX;
 	}
 	
 	/*
 	 * Return the number of cubes in the world in the y-direction.
 	 */
-	public int getNbCubesY() {
-		return this.nbCubesY;
+	public int getNbY() {
+		return this.nbY;
 	}
 	
 	/*
 	 * Return the number of cubes in the world in the z-direction.
 	 */
-	public int getNbCubesZ() {
-		return this.nbCubesZ;
+	public int getNbZ() {
+		return this.nbZ;
 	}
 	
 	/**
@@ -163,7 +183,7 @@ public class World {
 	 *         {@link #createWorld(int[][][], TerrainChangeListener)}.
 	 */
 	public int getCubeType(int x, int y, int z) {
-		return this.terrain[x][y][z];
+		return World.terrain[x][y][z];
 	}
 	
 	public static int getCubeType(Vector3d position) {
@@ -192,18 +212,19 @@ public class World {
 	 *             A precondition was violated or an exception was thrown.
 	 */
 	public void setCubeType(int x, int y, int z, int value) {
-		if ((value >= 0) && (value < 4)) {
-			this.terrain[x][y][z] = value;
+		if ((value >= TYPE_AIR) && (value < TYPE_WORKSHOP)) {
+			World.terrain[x][y][z] = value;
 		}
 	}
 	
 	/**
-	 * Checks if this cube of this postion is a solid block.
-	 * @return  True if the World's cube at this postion is solid.
-	 * 	    | cube.getCubeType() != Air
+	 * Checks if the cube at this position is a solid block.
+	 * @return  True if the World's cube at this position is solid.
+	 * 	    	| ((getCubeType(position.getCube) == 1) || (getCubeType(position.getCube()) == 2))
 	 */
 	public static boolean isSolid(Vector3d position) {
-		return(getCubeType(position.getCube()) == 1 || (getCubeType(position.getCube()) == 2));
+		return ((getCubeType(position.getCube()) == TYPE_ROCK) || 
+				(getCubeType(position.getCube()) == TYPE_TREE));
 	}
 	
 	/**
@@ -262,25 +283,40 @@ public class World {
 	
 	public Unit spawnUnit(boolean enableDefaultBehavior) {
 		
-		if (this.getNbUnits() < MAX_UNITS) {
-			this.setNbUnits(this.getNbUnits() + 1);
-			String name = "Joris Test";
-			Vector3d pos = this.getRndValidPos();
-			int weight = ThreadLocalRandom.current().nextInt(25, 100 + 1);
-			int agility = ThreadLocalRandom.current().nextInt(25, 100 + 1);
-			int strength = ThreadLocalRandom.current().nextInt(25, 100 + 1);
-			int toughness = ThreadLocalRandom.current().nextInt(25, 100 + 1);
+		this.setNbUnits(this.getNbUnits() + 1);
+		String name = "Hillbilly";
+		Vector3d pos = this.getRndValidPos();
+		int weight = ThreadLocalRandom.current().nextInt(25, 100 + 1);
+		int agility = ThreadLocalRandom.current().nextInt(25, 100 + 1);
+		int strength = ThreadLocalRandom.current().nextInt(25, 100 + 1);
+		int toughness = ThreadLocalRandom.current().nextInt(25, 100 + 1);
 						
-			try {
-				return new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
-			} catch (Throwable exc) {
-				
-			}
+		try {
+			return new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
+		} catch (Throwable exc) {							
 		}
 		// hoe niks doen als er al 100 unit zijn?
 		// exception maken in Unit denk ik.
 		return null;
 
+	}
+	
+	public void addUnit(Unit unit) {
+		if (this.getNbUnits() < MAX_UNITS) {
+			this.unitSet.add(unit);
+			if (this.getActiveFactions().size() < 5) {
+				Faction faction = new Faction();
+				this.addFaction(faction);
+				faction.addUnit(unit);
+			}
+			else {
+				
+			}
+		}
+	}
+	
+	public Set<Unit> getUnits() {
+		return this.unitSet;
 	}
 	
 	public boolean posOutOfBounds(int x, int y, int z) {
@@ -329,5 +365,45 @@ public class World {
 			rndPos = rndPos.genRndVector3d((int) this.getUBX(),(int) this.getUBY(),(int) this.getUBZ());
 		}	    
 		return rndPos;
+	}
+	
+	public void advanceTime(double dt) {
+		for (Unit unit: this.getUnits()) {
+			try {
+				unit.advanceTime(dt);
+			} catch (Throwable e) {
+			}
+		}
+	}
+	
+	public void addFaction(Faction faction) {
+		this.factionSet.add(faction);
+	}
+	public Set<Faction> getActiveFactions() {
+		return this.factionSet;
+	}
+	
+	// nog niet klaar!!
+	public Faction getSmallestFaction() {
+		Faction smallestFaction = new Faction();
+		for (Faction faction: this.getActiveFactions()) {
+			
+		}
+		return smallestFaction;
+	}
+	public void addBoulder(Boulder boulder) {
+		this.boulderSet.add(boulder);
+	}
+	
+	public Set<Boulder> getBoulders() {
+		return this.boulderSet;
+	}
+	
+	public void addLog(Log log) {
+		this.logSet.add(log);
+	}
+	
+	public Set<Log> getLogs() {
+		return this.logSet;
 	}
 }
