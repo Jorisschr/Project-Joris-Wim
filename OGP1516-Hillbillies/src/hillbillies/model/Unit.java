@@ -26,30 +26,41 @@ public class Unit {
 	 * Initialize this new unit with given position, name, weight, strength,
 	 * agility and toughness.
 	 * 
-	 * @param position
-	 *            The default position for this new unit.
-	 * @param name
-	 *            The name for this new unit.
-	 * @param weight
-	 *            The weight for this new unit.
-	 * @param strength
-	 *            The strength for this new unit.
-	 * @param agility
-	 *            The agility for this new unit.
-	 * @param toughness
-	 *            The toughness for this new unit.
-	 * @param orientation.
-	 *            The orientation for this new unit.
-	 * @post The position of this new unit is the given position. |
-	 *       new.getPosition() == position
-	 * @post The name of this new unit is equal to the given name. |
-	 *       new.getName() == name
+	 * @param 	position
+	 *        	The default position for this new unit.
+	 * @param 	name
+	 *          The name for this new unit.
+	 * @param 	weight
+	 *         	The weight for this new unit.
+	 * @param 	strength
+	 *          The strength for this new unit.
+	 * @param 	agility
+	 *          The agility for this new unit.
+	 * @param 	toughness
+	 *        	The toughness for this new unit.
+	 * @param 	orientation.
+	 *          The orientation for this new unit.
+	 * @param 	enableDefaultBehaviour
+	 * 			The starting state of this unit:
+	 * 			if true, the unit will start performing a random activity immediatly after spawn
+	 * 
+	 * @post   The position of this new unit is the given position. 
+	 * 		    |new.getPosition() == position
+	 * @post   The name of this new unit is equal to the given name. 
+	 * 		    |new.getName() == name
+	 * @post   The attributes of this unit well be set to the specified values
+	 * 		   	|new.getStrength() == strength
+	 * 		   	|new.getAgility() == agility
+	 * 		   	|new.getWeight() == weight
+	 * 		   	|new.getToughness() == toughness
+	 * @post   The new unit will perform its default behaviour if enableDefaultBehaviour is true.
+	 * 		
 	 * @throws OutOfBoundsException
-	 *             The given position is out of bounds. | !
-	 *             isValidPosition(position)
+	 *         The given position is out of bounds. 
+	 *         	|!isValidPosition(position)
 	 * @throws IllegalArgumentException
-	 *             This new unit cannot have the given name as its name. | !
-	 *             canHaveAsName(this.getName())
+	 *         This new unit cannot have the given name as its name. 
+	 *         	|!canHaveAsName(this.getName())
 	 */
 	public Unit(String name, Vector3d position, int weight, int agility, int strength, int toughness,
 			boolean enableDefaultBehavior) throws OutOfBoundsException, IllegalArgumentException {
@@ -123,7 +134,7 @@ public class Unit {
 	 * Variable registering the name of this unit.
 	 */
 	private String name;
-
+	
 	/**
 	 * Variable registering the weight of this unit.
 	 */
@@ -170,8 +181,7 @@ public class Unit {
 	private String movement;
 
 	/**
-	 * Variable registering the passed time since the unit started its current
-	 * activity
+	 * Variable registering the passed time since the unit started its current activity
 	 */
 	private double counter;
 
@@ -179,37 +189,93 @@ public class Unit {
 	 * Variable registering whether default behavior is enabled for this unit.
 	 */
 	private boolean enableDefaultBehavior;
-
+	
+	/**
+	 * Variable registering the units current absolute speed.
+	 */
 	private double speed;
-
+	
+	/**
+	 * Three-dimensional vector registering the units current vectorial speed.
+	 */
 	private Vector3d velocity;
 
+	/**
+	 * Variable registering the units current activity progress.
+	 */
 	private double activityProgress;
-
+	
+	/**
+	 * Variable registering the time needed for this unit to end its current activity
+	 */
 	private double timeNeeded;
 
+	/**
+	 * Three-dimensional vector registering the units current destination.
+	 */
 	private Vector3d destination;
-
-	private Vector3d nextPosition;
 	
+	/**
+	 * Three-dimensional vector registering the units positon to move to after it has moved to .
+	 */
+	private Vector3d nextPosition;
+
+	/**
+	 * Variable registering the time that this unit has been moving.
+	 */
 	private double movingTime;
 	
+	/**
+	 * Variable registering the time that this unit has been sprinting.
+	 */
 	private double sprintingTime;
 	
+	/**
+	 * String registering the activity that this unit is waiting to do after his current activity.
+	 */
 	private String waitingTo;
-
+	
+	/**
+	 * Unit registering this units current opponent in a fight.
+	 */
 	private Unit opponent;
 	
+	/**
+	 * Variable registering this units current progress to his next level.
+	 */
 	private int experience;
 	
+	
+	/**
+	 * Variable registering this units faction.
+	 */
 	private Faction faction;
 	
+	///////////////////////////
+	///	GENERAL POSITIONING ///
+	///////////////////////////
 	/**
 	 * Return the position of this unit.
 	 */
 	@Basic
 	public Vector3d getPosition() {
 		return this.position;
+	}
+	
+	/**
+	 * Set this units position to the specified position
+	 * @param  newPos
+	 * 			The position to place this unit on.
+	 * @throws OutOfBoundsException
+	 * 			|!isValidPosition(newPos)
+	 * @post   This units position is the specified position
+	 * 			|this.position == newPos
+	 */
+	private void setPosition(Vector3d newPos) throws OutOfBoundsException {
+		if (!newPos.isValidPosition()) {
+			throw new OutOfBoundsException(newPos.getDoubleArray());
+		}
+		this.position = newPos;
 	}
 	
 	public int[] getOccupyingCube(){
@@ -241,25 +307,23 @@ public class Unit {
 	}
 	
 	/**
-	 * Check whether the given position is a valid position for a unit.
+	 * Constant reflecting the length of any side of a cube of the game world.
 	 * 
-	 * @param position
-	 *            The position to check.
-	 * @return True if and only if all doubles of the given position are larger
-	 *         than or equal to the lower bound and smaller than or equal to the
-	 *         upper bound. | result == (for (int i = 0; i < position.length;) |
-	 *         ((position[i] > LOWER_BOUND) && | (position[i] < UPPER_BOUND)))
+	 * @return The length of all sides of all cubes of the game world is 1. |
+	 *         result == 1
 	 */
+	public static final int CUBE_LENGTH = 1;
 
-
-	private void setPosition(Vector3d newPos) {
-		if (newPos.isValidPosition()) {
-			this.position = newPos;
-		}
-	}
-
+	
+	
+	
+	/////////////////
+	///	UNIT NAME ///
+	/////////////////
 	/**
 	 * Return the name of this unit.
+	 * 
+	 * @return this units name
 	 */
 	@Basic
 	@Raw
@@ -267,11 +331,21 @@ public class Unit {
 	public String getName() {
 		return this.name;
 	}
-
-	public void setName(String newName) {
-		if (this.canHaveAsName(newName)) {
-			this.name = newName;
+	
+	/**
+	 * Set this units name to the specified name.
+	 * @param	newName
+	 * 				the String to set this units name to.
+	 * @throws	NameException
+	 * 				Throws a NameException if the specified name is not valid
+	 * @post	This units name will be set to newName
+	 * 				|this.getName() == newName
+	 */
+	public void setName(String newName) throws NameException{
+		if (!this.canHaveAsName(newName)) {
+			throw new NameException(newName);
 		}
+		this.name = newName;
 	}
 
 	/**
@@ -301,7 +375,12 @@ public class Unit {
 		}
 		return true;
 	}
-
+	
+	
+	///////////////////////
+	///	UNIT ATTRIBUTES ///
+	///////////////////////
+	
 	public boolean isWithinRange(int value) {
 		return ((value >= 25) && (value <= 100));
 	}
@@ -456,32 +535,91 @@ public class Unit {
 		}
 
 	}
-
+	
+	
+	/////////////////////////////
+	///	HITPOINTS AND STAMINA ///
+	/////////////////////////////
 	/**
 	 * Return the current amount of hitpoints of this unit.
 	 */
 	public int getHitpoints() {
 		return this.hitpoints;
 	}
+	
+	/**
+	 * Set this units hitpoints to the specified integer value.
+	 * 
+	 * @param hitpoints
+	 * 			The value to set this units currents hitpoints to.
+	 */
+	private void setHitpoints(int hitpoints){
 
+		if ((hitpoints >= getMinHitpoints()) && (hitpoints <= this.getMaxHitpoints())) {
+			this.hitpoints = hitpoints;
+		}
+
+		else if (hitpoints > this.getMaxHitpoints()) {
+			this.hitpoints = this.getMaxHitpoints();
+		}
+
+		else if (hitpoints < getMinHitpoints()) {
+			this.hitpoints = getMinHitpoints();
+		}
+	}
+	
 	/**
 	 * Inspect the maximal amount of hitpoints of this unit.
+	 * @return	ceil(this.weight*this.toughness/50)
 	 */
 	@Basic
-	@Immutable
 	@Raw
 	public int getMaxHitpoints() {
 		return (int) Math.ceil(this.getWeight() * this.getToughness() * 0.02);
 	}
-
+	
+	/**
+	 * Inspect the minimal hitpoints this unit can have.
+	 * @return 0
+	 */
+	@Basic
+	@Raw
 	public int getMinHitpoints() {
 		return 0;
 	}
+	
+	/**
+	 * Return the current amount of stamina of this unit.
+	 */
+	public int getStamina() {
+		return this.stamina;
+	}
+	
+	/**
+	 * Set this units stamina to the specified integer value.
+	 * 
+	 * @param stamina
+	 * 			The value to set this units stamina to
+	 */
+	private void setStamina(int stamina) {
+		if ((stamina >= 0) && (stamina <= this.getMaxHitpoints()))
+			this.stamina = stamina;
 
+		else if (stamina > this.getMaxHitpoints())
+			this.stamina = this.getMaxHitpoints();
+
+		else if (stamina < getMinHitpoints())
+			this.stamina = getMinHitpoints();
+	}
+	
+	
+	///////////////////////////
+	/// VELOCITY AND MOVING ///
+	///////////////////////////
 	public double getCurrentSpeed() {
 		return this.speed;
 	}
-
+	
 	public void setSpeed(int z) {
 		double basevel = 0.75 * (this.getStrength() + this.getAgility()) / this.getWeight();
 		double walkvel;
@@ -504,105 +642,12 @@ public class Unit {
 		this.speed = 0.0;
 	}
 	
-	private void setHitpoints(int hitpoints){
-
-		if ((hitpoints >= getMinHitpoints()) && (hitpoints <= this.getMaxHitpoints())) {
-			this.hitpoints = hitpoints;
-		}
-
-		else if (hitpoints > this.getMaxHitpoints()) {
-			this.hitpoints = this.getMaxHitpoints();
-		}
-
-		else if (hitpoints < getMinHitpoints()) {
-			this.hitpoints = getMinHitpoints();
-		}
-	}
-
-	/**
-	 * Return the current amount of stamina of this unit.
-	 */
-	public int getStamina() {
-		return this.stamina;
-	}
-
-	private void setStamina(int stamina) {
-		if ((stamina >= 0) && (stamina <= this.getMaxHitpoints()))
-			this.stamina = stamina;
-
-		else if (stamina > this.getMaxHitpoints())
-			this.stamina = this.getMaxHitpoints();
-
-		else if (stamina < getMinHitpoints())
-			this.stamina = getMinHitpoints();
-	}
-
-	/**
-	 * Return the current status of this unit.
-	 */
-	private String getStatus() {
-		return this.status;
-	}
-
-	/**
-	 * Set the units current status to the specified activity.
-	 * 
-	 * @post The units activity is changed to the given activity.
-	 */
-	private void setStatus(String activity) {
-		this.status = activity;
-	}
-
-	public double getActivityProgress() {
-		return this.activityProgress;
-	}
-
-	public void setActivityProgress(double progress) {
-		this.activityProgress = progress;
-	}
-
 	public Vector3d getDestination() {
 		return this.destination;
 	}
 
 	public void setDestination(Vector3d destination) {
 		this.destination = destination;
-	}
-
-	/**
-	 * Return the time needed for a unit to complete an activity.
-	 */
-	public double getTimeNeeded() {
-		return this.timeNeeded;
-	}
-
-	/**
-	 * Calculate the total time needed for a unit to finish its activity.
-	 * 
-	 * @param status
-	 *            The status of this unit.
-	 */
-	private void setTimeNeeded() {
-		if (this.isWorking())
-			this.timeNeeded = 500 / this.getStrength();
-
-		if (this.isResting() || this.isInitResting())
-			this.timeNeeded = (0.2 * 200 / this.getToughness());
-		
-		if (this.isAttacking())
-			this.timeNeeded = 1;
-	}
-	
-	public void setTimeNeeded(double time) {
-		this.timeNeeded = time;
-	}
-
-	public double getCounter() {
-		return this.counter;
-	}
-
-	private void setCounter(double time) {
-		this.counter = time;
 	}
 
 	public Vector3d getNextPosition() {
@@ -642,19 +687,6 @@ public class Unit {
 		}
 	}
 	
-	public String getWaitingTo() {
-		return this.waitingTo;
-	}
-	
-	public void setWaitingTo(String arg) {
-		this.waitingTo = arg;
-	}
-
-	public static String getRandomActivity(String[] activities) {
-		int rnd = new Random().nextInt(activities.length);
-		return activities[rnd];
-	}
-
 	/**
 	 * Return the velocity of a Unit.
 	 */
@@ -680,291 +712,13 @@ public class Unit {
 	public Vector3d calcVelocity(Vector3d vector) {
 		return vector.multiply(this.getCurrentSpeed() / vector.calcNorm());
 	}
-
-	/**
-	 * Initiate an attack move of two Units from a different section, standing
-	 * next to each other.
-	 * 
-	 * @param defender
-	 *            the defending Unit
-	 * @effect Turn the two Units to each other | if
-	 * @effect Update the status of the fighting units, and reset their activity
-	 *         progress.
-	 * 
-	 * @effect
-	 */
-	public void attack(Unit defender) {
-		// TODO: exceptions for when two units are from the same faction.
-		// TODO: look again at orientation: not yet on point (see tests: put 9 units in a square and make the centre unit fight everyone else).
-		if (this.isAdjacentTo(defender)){
-			float attackerOr = (float) Math.atan2(defender.getPosition().getY() - this.getPosition().getY(),
-                    defender.getPosition().getX() - this.getPosition().getX());
-			float defenderOr = (float) Math.atan2(this.getPosition().getY() - defender.getPosition().getY(),
-                    this.getPosition().getX() - defender.getPosition().getX());
-			this.setOrientation(attackerOr);
-			defender.setOrientation(defenderOr);
-
-			this.setActivityProgress(0);
-			defender.setActivityProgress(0);
-
-			this.setStatus("Attacking");
-			defender.setStatus("Defending");
-			this.setTimeNeeded();
-
-			this.setOpponent(defender);
-			defender.setOpponent(this);
-		}
-	}
-
-	/**
-	 * Pair two units to each other as opponents.
-	 * 
-	 * @param   opponent
-	 *          The unit to set as opponent.
-	 * @effect  The units opponent can be set as this opponent.
-	 */
-	public void setOpponent(Unit opponent) {
-		this.opponent = opponent;
-	}
-
-	/**
-	 * Inspect this units opponent.
-	 * 
-	 * @return 	this units opponent in the current attack
-	 */
-	private Unit getOpponent() {
-		return this.opponent;
-	}
-
-	public void defend(Unit attacker) {
-
-		double dodgeProb = 0.2 * this.getAgility() / attacker.getAgility();
-		boolean dodged = (new Random().nextDouble() <= dodgeProb);
-
-		if (dodged == true) {
-			Vector3d pos = this.getPosition();
-			Vector3d evasion = new Vector3d();
-			boolean foundNewPos = false;
-			 while (foundNewPos == false) {
-				for (int i = 0; i < 2; i++) {
-
-					double plus = new Random().nextDouble();
-					double randomValue = -1 + 2 * plus;
-					evasion.setDimension(i,randomValue);
-				}
-				Vector3d newPos = new Vector3d();
-
-				for (int i = 0; i < 2; i++)
-
-					newPos.setDimension(i, pos.getDimension(i) + evasion.getDimension(i));
-				foundNewPos = true;
-				// TODO create passable terrain check in World class
-				this.setPosition(newPos);
-			}
-			int curXP = this.getExperience();
-			this.setXP(curXP + 20);
-		} else {
-			double blockProb = 0.25 * (this.getStrength() - this.getAgility())
-					/ (attacker.getStrength() - attacker.getAgility());
-			boolean blocked = (new Random().nextDouble() <= blockProb);
-			if (blocked != true) {
-				double curHealth = this.getHitpoints();
-				double damage = attacker.getStrength() / 10;
-				this.setHitpoints((int) (curHealth - damage));
-				
-				int curXP = attacker.getExperience();
-				attacker.setXP(curXP + 20);
-			} else {
-				int curXP = this.getExperience();
-				this.setXP(curXP + 20);
-			}
-
-		attacker.setOpponent(null);
-		attacker.setStatus("Idle");
-		this.setOpponent(null);
-		this.setStatus("Idle");
-		}
-	}
-
-	/**
-	 * This method will initiate resting.
-	 * 
-	 * @post The units current status will be resting.
-	 */
-	public void rest() {
-		if ((this.isMoving()) && (!(this.getWaitingTo() == "Resting"))) {
-			this.setWaitingTo("Resting");
-		}
-		else if (this.canBeInterrupted("Resting")) {
-			if (this.isMoving()) {
-				this.setWaitingTo("Moving");
-			}
-			this.setActivityProgress(0);
-			this.setStatus("InitResting");
-			this.setTimeNeeded();
-		}
-	}
-
-	/**
-	 * Restore hitpoints and stamina of a unit, when it is resting.
-	 * 
-	 * @post If this units current stamina is not equal to its maximal amount of
-	 *       stamina points, the amount of stamina is increased by 2. | if
-	 *       (this.getStamina() != this.getMaxHitpoints()) | then
-	 *       new.getStamina() = this.getStamina() + 2
-	 * @post If this units current stamina is equal to its maximal stamina and
-	 *       this unit is at full health, its status will be set to default.
-	 *       Else its hitpoints will be increased by 1. | if ((this.getStamina()
-	 *       == this.getMaxHitpoints()) && | (this.getHitpoints !=
-	 *       this.getMaxHitpoints())) | then new.getStatus() = "Default" | else
-	 *       | new.getHitpoints() = this.getHitpoints() + 1
-	 */
-	public void restore() {
-
-		if (this.getHitpoints() == this.getMaxHitpoints()) {
-			if (this.getStamina() == this.getMaxHitpoints()) {
-				if (this.getWaitingTo() == "Moving") {
-					this.setStatus("Moving");
-					this.setWaitingTo(null);
-				}
-				else {
-					this.setStatus("Idle");
-				}
-			}
-			else {
-				this.setStamina(this.getStamina() + 2);
-			}
-		} 
-		else {
-			this.setHitpoints(this.getHitpoints() + 1);
-		}
-	}
-
-	/**
-	 * Initiate working for this unit.
-	 */
-	public void work() {
-
-		if (this.canBeInterrupted("Working")) {
-			this.setActivityProgress(0);
-			this.setStatus("Working");
-			this.setTimeNeeded();
-		}
-	}
-	
-	public void workDone(){
-		this.setActivityProgress(0);
-		this.setStatus("Idle");
-			
-	}
-
-
-	/**
-	 * Advance a unit's game time and update it's position, attributes and status 
-	 * according to it's current status.
-	 * @param 	dt
-	 * 			The amount of time a unit will advance.
-	 * @throws 	InterruptedException
-	 * @throws 	IllegalArgumentException
-	 * 			Throws an IllegalArgumentException if the given dt is larger than 0.2 .
-	 */
-	public void advanceTime(double dt) throws IllegalArgumentException, InterruptedException {
-		if (!isValidDuration(dt)) {
-			throw new IllegalArgumentException();
-		}
-
-		TimeUnit.MILLISECONDS.sleep((long) dt * 1000);
-		this.setCounter(this.getCounter() + dt);
-
-		if (this.getCounter() >= REST_INTERVAL) {
-			this.rest();
-			this.setCounter(0);
-		}
-		if (this.isIdle()) {
-			if (this.isDefaultBehaviorEnabled()) {
-				this.startDefaultBehavior();
-			}
-		}
-		if (this.isMoving()) {		
-			this.setMovingTime(this.getMovingTime() + dt);
-			
-			if (this.isSprinting()) {				
-				this.updateSprinting(dt);
-			}
-			
-			this.updatePosition(dt);
-			if (this.getPosition() == this.getNextPosition()) {
-				if ((this.destinationReached()) || (this.getDestination().getX() == -1)) {				
-					this.setStatus("Idle");	
-					this.setDestination(new Vector3d(-1,-1,-1));
-				}
-				else {
-					this.moveTo(this.getDestination());
-				}
-			}	
-		}		
-		else if ((this.isInitResting()) || (this.isResting())) {
-
-			this.setActivityProgress(this.getActivityProgress() + dt);
-
-			if (this.getActivityProgress() >= this.getTimeNeeded()) {
-				this.setStatus("Resting");
-				this.restore();
-				this.setActivityProgress(0);
-			}
-		} 
-		else if (this.isWorking()) {
-			// 'cast': if work isn't completed nothing happens, no progress is saved.
-			// if work is finished, change game world.
-			this.setActivityProgress(this.getActivityProgress() + dt);
-			if (this.getActivityProgress() >= this.getTimeNeeded()) {
-				this.workDone();
-				
-				int curXP = this.getExperience();
-				this.setXP (curXP + 10);
-			}
-		} 
-		else if (this.isAttacking()) {
-			Unit defender = this.getOpponent();
-
-			double attacked = this.getActivityProgress();
-			this.setActivityProgress(attacked + dt);
-
-			if (this.getActivityProgress() >= 1) {
-				defender.defend(this);
-			}
-		}
-	}
-
-	/**
-	 * Constant reflecting the length of any side of a cube of the game world.
-	 * 
-	 * @return The length of all sides of all cubes of the game world is 1. |
-	 *         result == 1
-	 */
-	public static final int CUBE_LENGTH = 1;
-
-	/**
-	 * Check whether the given duration is a valid duration to advance the time.
-	 * 
-	 * @param duration
-	 *            The duration to check.
-	 * @return True if and only if the given duration is larger than or equal to
-	 *         zero, and always smaller than 0.2. | result == ((duration < 0) ||
-	 *         (duration >=0.2))
-	 */
-	public static boolean isValidDuration(double duration) {
-		if ((duration < 0) || (duration >= 0.2)){
-			return false;
-		}
-		return true;
-	}
 	
 	/**
 	 * Update this units position according to its current velocity, 
 	 * destination and advanced time dt.
+	 * @throws OutOfBoundsException 
 	 */
-	public void updatePosition(double dt) {
+	public void updatePosition(double dt) throws OutOfBoundsException {
 		Vector3d oldPos = this.getPosition();
 		double[] velocity = this.getVelocity();
 
@@ -984,8 +738,15 @@ public class Unit {
 	 * Initiate a more complex movement from the unit's current position to
 	 * another arbitrary cube of the game world.
 	 * 
-	 * @param destination
+	 * @param  destination
 	 *            The new location to which the unit has to move.
+	 *            
+	 * @effect this unit will start moving to the specified location, if its current activity can be interrupted.
+	 * 
+	 * @post   If this units current activity is interruptable, this units status will be "Moving".
+	 * 			 |this.status == "Moving"
+	 * @post   If this units current activity is interruptable, this units destination will be the vector location.
+	 * 			 |this.destination = location
 	 */
 	public void moveTo(Vector3d  location) {
 		if (this.canBeInterrupted("Moving"))
@@ -1012,8 +773,17 @@ public class Unit {
 	 * Initiate movement to a game world cube adjacent to the unit's current
 	 * location.
 	 * 
-	 * @param targetPos
+	 * @param   vector
 	 *            The adjacent cube to which this unit has to move.
+	 * @post    If this unit has reached the next cube, it will have updated its current nextPosition, Speed, Velocity, Orientation and TimeNeeded.
+	 * 			  |this.nextPosition == nextPos
+	 * 			  |this.Speed == vector.getZ()
+	 * 			  |this.Velocity == this.calcVelocity()
+	 * 			  |this.orientation = atan2(this.velocity.getY(),this.velocity.getX())
+	 * 			  |this.timeNeeded == (distance to next cube)/(this.velocity)
+	 * @post    If this unit has reached the next cube, its xp will be incremented by 1
+	 * 			  |this.xp += 1
+	 *            
 	 */
 	public void moveToAdjacent(Vector3d vector) {	
 		Vector3d oldPos = this.getPosition().getCube();	
@@ -1043,7 +813,7 @@ public class Unit {
 		}
 	}
 	
-	/*
+	/**
 	 * Check whether the unit has reached its destination.
 	 */
 	public boolean destinationReached() {
@@ -1056,7 +826,7 @@ public class Unit {
 		return true;
 	}
 	
-	/*
+	/**
 	 * Check whether the unit has reached a neighboring cube.
 	 */
 	public boolean nextPositionReached() {
@@ -1065,14 +835,14 @@ public class Unit {
 		return pos.equals(nextPos);
 	}
 
-	/*
+	/**
 	 * Check whether this unit is sprinting.
 	 */
 	public boolean isSprinting() {
 		return this.movement == "Sprinting";
 	}
 
-	/*
+	/**
 	 * Set this units movement status to sprinting.
 	 */
 	public void startSprinting() {
@@ -1080,12 +850,93 @@ public class Unit {
 			this.movement = "Sprinting";
 	}
 
-	/*
+	/**
 	 * Stop this unit from sprinting.
 	 */
 	public void stopSprinting() {
 		this.movement = "Walking";
 	}
+	
+	
+	
+	
+	////////////////////////////////////
+	/// STATUS AND ACTIVITY PROGRESS ///
+	////////////////////////////////////
+	/**
+	 * Return the current status of this unit.
+	 */
+	private String getStatus() {
+		return this.status;
+	}
+
+	/**
+	 * Set the units current status to the specified activity.
+	 * 
+	 * @post The units activity is changed to the given activity.
+	 */
+	private void setStatus(String activity) {
+		this.status = activity;
+	}
+
+	public double getActivityProgress() {
+		return this.activityProgress;
+	}
+
+	public void setActivityProgress(double progress) {
+		this.activityProgress = progress;
+	}
+
+	/**
+	 * Return the time needed for a unit to complete an activity.
+	 */
+	public double getTimeNeeded() {
+		return this.timeNeeded;
+	}
+
+	/**
+	 * Calculate the total time needed for a unit to finish its activity.
+	 * 
+	 * @param status
+	 *            The status of this unit.
+	 */
+	private void setTimeNeeded() {
+		if (this.isWorking())
+			this.timeNeeded = 500 / this.getStrength();
+
+		if (this.isResting() || this.isInitResting())
+			this.timeNeeded = (0.2 * 200 / this.getToughness());
+		
+		if (this.isAttacking())
+			this.timeNeeded = 1;
+	}
+	
+	public void setTimeNeeded(double time) {
+		this.timeNeeded = time;
+	}
+
+	public double getCounter() {
+		return this.counter;
+	}
+
+	private void setCounter(double time) {
+		this.counter = time;
+	}
+
+	
+	public String getWaitingTo() {
+		return this.waitingTo;
+	}
+	
+	public void setWaitingTo(String arg) {
+		this.waitingTo = arg;
+	}
+
+	public static String getRandomActivity(String[] activities) {
+		int rnd = new Random().nextInt(activities.length);
+		return activities[rnd];
+	}
+
 
 	/*
 	 * Check whether this unit is idle.
@@ -1151,10 +1002,15 @@ public class Unit {
 	}
 
 	/**
-	 * Start default behavior for a unit. This unit will randomly choose one of
-	 * three activities namely: working, resting or moving to a random location
-	 * in the game world. This unit will keep choosing and finishing activities
-	 * whenever default behavior is enabled and this units status becomes idle.
+	 * Start default behavior for a unit.
+	 * 
+	 * @effect This unit will randomly choose one of three activities namely: working, resting or moving to a random location in the game world. 
+	 * @effect This unit will keep choosing and finishing new activities whenever default behavior is enabled.
+	 * 
+	 * @post   This units default behaviour state will be true
+	 * 			|this.defaultBehaviour == true
+	 * @post   This units status will we 'Idle'.
+	 * 			|this.status == "Idle"
 	 */
 	public void startDefaultBehavior() {
 		if ((this.isIdle()) && (this.isDefaultBehaviorEnabled())) {
@@ -1176,6 +1032,9 @@ public class Unit {
 
 	/**
 	 * Disable default behavior for this unit.
+	 * 
+	 * @post This units default behaviour state will be set to false
+	 * 			|this.defaultBehaviour == false 
 	 */
 	public void stopDefaultBehavior() {
 		this.setDefaultBehaviorEnabled(false);
@@ -1209,6 +1068,327 @@ public class Unit {
 
 		return false;
 	}
+	
+	////////////////
+	/// FIGHTING ///
+	////////////////
+	/**
+	 * Initiate an attack move of two Units from a different section, standing
+	 * next to each other.
+	 * 
+	 * @param defender
+	 *            the defending Unit
+	 * @effect Turn the two Units to each other | if
+	 * @effect Update the status of the fighting units, and reset their activity
+	 *         progress.
+	 * 
+	 * @effect
+	 */
+	public void attack(Unit defender) {
+		// TODO: exceptions for when two units are from the same faction.
+		// TODO: look again at orientation: not yet on point (see tests: put 9 units in a square and make the centre unit fight everyone else).
+		if (this.isAdjacentTo(defender)){
+			float attackerOr = (float) Math.atan2(defender.getPosition().getY() - this.getPosition().getY(),
+                    defender.getPosition().getX() - this.getPosition().getX());
+			float defenderOr = (float) Math.atan2(this.getPosition().getY() - defender.getPosition().getY(),
+                    this.getPosition().getX() - defender.getPosition().getX());
+			this.setOrientation(attackerOr);
+			defender.setOrientation(defenderOr);
+
+			this.setActivityProgress(0);
+			defender.setActivityProgress(0);
+
+			this.setStatus("Attacking");
+			defender.setStatus("Defending");
+			this.setTimeNeeded();
+
+			this.setOpponent(defender);
+			defender.setOpponent(this);
+		}
+	}
+
+	/**
+	 * Pair two units to each other as opponents.
+	 * 
+	 * @param   opponent
+	 *          The unit to set as opponent.
+	 * @effect  The units opponent can be set as this opponent.
+	 */
+	public void setOpponent(Unit opponent) {
+		this.opponent = opponent;
+	}
+
+	/**
+	 * Inspect this units opponent.
+	 * 
+	 * @return 	this units opponent in the current attack
+	 */
+	private Unit getOpponent() {
+		return this.opponent;
+	}
+	
+	/**
+	 * This method is invocated when a unit finished its attack. The defender will try to dodge, then block, and will take damage if this fails.
+	 * The attackers and defenders XP will be also updated accordingly.
+	 * 
+	 * @param attacker
+	 * 			The unit to which this unit is defending.
+	 * 
+	 * @post If the defending unit succeeds dodging, that unit will move to a random passable location next to his cube.
+	 * 		 It will also get 20 XP.
+	 * @post If the defending unit succees blocking, that unit will get 20 XP.
+	 * 
+	 * @post If the defending unit fails dodging and blocking, that unit will take damage based on the attackers attributes.
+	 * 		 The attacker will also get 20 XP.
+	 */
+	public void defend(Unit attacker) {
+
+		double dodgeProb = 0.2 * this.getAgility() / attacker.getAgility();
+		boolean dodged = (new Random().nextDouble() <= dodgeProb);
+
+		if (dodged == true) {
+			Vector3d pos = this.getPosition();
+			Vector3d evasion = new Vector3d();
+			boolean foundNewPos = false;
+			 while (foundNewPos == false) {
+				for (int i = 0; i < 2; i++) {
+
+					double plus = new Random().nextDouble();
+					double randomValue = -1 + 2 * plus;
+					evasion.setDimension(i,randomValue);
+				}
+				Vector3d newPos = new Vector3d();
+
+				for (int i = 0; i < 2; i++)
+
+					newPos.setDimension(i, pos.getDimension(i) + evasion.getDimension(i));
+				foundNewPos = true;
+				// TODO create passable terrain check in World class
+				try {
+					this.setPosition(newPos);
+				} catch (OutOfBoundsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			int curXP = this.getExperience();
+			this.setXP(curXP + 20);
+		} else {
+			double blockProb = 0.25 * (this.getStrength() - this.getAgility())
+					/ (attacker.getStrength() - attacker.getAgility());
+			boolean blocked = (new Random().nextDouble() <= blockProb);
+			if (blocked != true) {
+				double curHealth = this.getHitpoints();
+				double damage = attacker.getStrength() / 10;
+				this.setHitpoints((int) (curHealth - damage));
+				
+				int curXP = attacker.getExperience();
+				attacker.setXP(curXP + 20);
+			} else {
+				int curXP = this.getExperience();
+				this.setXP(curXP + 20);
+			}
+
+		attacker.setOpponent(null);
+		attacker.setStatus("Idle");
+		this.setOpponent(null);
+		this.setStatus("Idle");
+		}
+	}
+	
+	
+	
+	///////////////
+	/// RESTING ///
+	///////////////
+	/**
+	 * This method will initiate resting.
+	 * 
+	 * @post The units current status will be resting.
+	 */
+	public void rest() {
+		if ((this.isMoving()) && (!(this.getWaitingTo() == "Resting"))) {
+			this.setWaitingTo("Resting");
+		}
+		else if (this.canBeInterrupted("Resting")) {
+			if (this.isMoving()) {
+				this.setWaitingTo("Moving");
+			}
+			this.setActivityProgress(0);
+			this.setStatus("InitResting");
+			this.setTimeNeeded();
+		}
+	}
+
+	/**
+	 * Restore hitpoints and stamina of a unit, when it is resting.
+	 * 
+	 * @post If this units current stamina is not equal to its maximal amount of
+	 *       stamina points, the amount of stamina is increased by 2. | if
+	 *       (this.getStamina() != this.getMaxHitpoints()) | then
+	 *       new.getStamina() = this.getStamina() + 2
+	 * @post If this units current stamina is equal to its maximal stamina and
+	 *       this unit is at full health, its status will be set to default.
+	 *       Else its hitpoints will be increased by 1. | if ((this.getStamina()
+	 *       == this.getMaxHitpoints()) && | (this.getHitpoints !=
+	 *       this.getMaxHitpoints())) | then new.getStatus() = "Default" | else
+	 *       | new.getHitpoints() = this.getHitpoints() + 1
+	 */
+	public void restore() {
+
+		if (this.getHitpoints() == this.getMaxHitpoints()) {
+			if (this.getStamina() == this.getMaxHitpoints()) {
+				if (this.getWaitingTo() == "Moving") {
+					this.setStatus("Moving");
+					this.setWaitingTo(null);
+				}
+				else {
+					this.setStatus("Idle");
+				}
+			}
+			else {
+				this.setStamina(this.getStamina() + 2);
+			}
+		} 
+		else {
+			this.setHitpoints(this.getHitpoints() + 1);
+		}
+	}
+	
+	
+	
+	
+	///////////////
+	/// WORKING ///
+	///////////////
+	/**
+	 * Initiate working for this unit.
+	 */
+	public void work() {
+
+		if (this.canBeInterrupted("Working")) {
+			this.setActivityProgress(0);
+			this.setStatus("Working");
+			this.setTimeNeeded();
+		}
+	}
+	
+	public void workDone(){
+		// TODO: A LOT OF WORK HAS TO BE DONE HERE.
+		this.setActivityProgress(0);
+		this.setStatus("Idle");
+			
+	}
+
+	////////////////////
+	/// ADVANCE TIME ///
+	////////////////////
+	/**
+	 * Advance a unit's game time and update it's position, attributes and status 
+	 * according to it's current status.
+	 * @param 	dt
+	 * 			The amount of time a unit will advance.
+	 * @throws 	InterruptedException
+	 * @throws 	IllegalArgumentException
+	 * 			Throws an IllegalArgumentException if the given dt is larger than 0.2 .
+	 */
+	public void advanceTime(double dt) throws IllegalArgumentException, InterruptedException {
+		if (!isValidDuration(dt)) {
+			throw new IllegalArgumentException();
+		}
+
+		TimeUnit.MILLISECONDS.sleep((long) dt * 1000);
+		this.setCounter(this.getCounter() + dt);
+
+		if (this.getCounter() >= REST_INTERVAL) {
+			this.rest();
+			this.setCounter(0);
+		}
+		if (this.isIdle()) {
+			if (this.isDefaultBehaviorEnabled()) {
+				this.startDefaultBehavior();
+			}
+		}
+		if (this.isMoving()) {		
+			this.setMovingTime(this.getMovingTime() + dt);
+			
+			if (this.isSprinting()) {				
+				this.updateSprinting(dt);
+			}
+			
+			try {
+				this.updatePosition(dt);
+			} catch (OutOfBoundsException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (this.getPosition() == this.getNextPosition()) {
+				if ((this.destinationReached()) || (this.getDestination().getX() == -1)) {				
+					this.setStatus("Idle");	
+					this.setDestination(new Vector3d(-1,-1,-1));
+				}
+				else {
+					this.moveTo(this.getDestination());
+				}
+			}	
+		}		
+		else if ((this.isInitResting()) || (this.isResting())) {
+
+			this.setActivityProgress(this.getActivityProgress() + dt);
+
+			if (this.getActivityProgress() >= this.getTimeNeeded()) {
+				this.setStatus("Resting");
+				this.restore();
+				this.setActivityProgress(0);
+			}
+		} 
+		else if (this.isWorking()) {
+			// 'cast': if work isn't completed nothing happens, no progress is saved.
+			// if work is finished, change game world.
+			this.setActivityProgress(this.getActivityProgress() + dt);
+			if (this.getActivityProgress() >= this.getTimeNeeded()) {
+				this.workDone();
+				
+				int curXP = this.getExperience();
+				this.setXP (curXP + 10);
+			}
+		} 
+		else if (this.isAttacking()) {
+			Unit defender = this.getOpponent();
+
+			double attacked = this.getActivityProgress();
+			this.setActivityProgress(attacked + dt);
+
+			if (this.getActivityProgress() >= 1) {
+				defender.defend(this);
+			}
+		}
+	}
+
+
+	/**
+	 * Check whether the given duration is a valid duration to advance the time.
+	 * 
+	 * @param duration
+	 *            The duration to check.
+	 * @return True if and only if the given duration is larger than or equal to
+	 *         zero, and always smaller than 0.2. | result == ((duration < 0) ||
+	 *         (duration >=0.2))
+	 */
+	public static boolean isValidDuration(double duration) {
+		if ((duration < 0) || (duration >= 0.2)){
+			return false;
+		}
+		return true;
+	}
+	
+
+	
+	
+	
+	///////////////////////////////
+	/// EXPERIENCE AND LEVELING ///
+	///////////////////////////////
 	
 	public int getExperience(){
 		return this.experience;
@@ -1245,6 +1425,12 @@ public class Unit {
 		this.setWeight(this.getWeight());
 	}
 	
+	
+	
+	
+	////////////////////
+	/// UNIT FACTION ///
+	////////////////////
 	public Faction getFaction() {
 		return this.faction;
 	}

@@ -1,5 +1,6 @@
 package hillbillies.part1.facade;
 import ogp.framework.util.ModelException;
+import helperclasses.NameException;
 import helperclasses.OutOfBoundsException;
 import helperclasses.Vector3d;
 import hillbillies.model.Unit;
@@ -39,7 +40,12 @@ public class Facade implements IFacade {
 	
 	@Override
 	public void setName(Unit unit, String newName) throws ModelException {
-		unit.setName(newName);
+		try {
+			unit.setName(newName);
+		} catch (NameException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	@Override

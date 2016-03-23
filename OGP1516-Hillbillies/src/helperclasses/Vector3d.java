@@ -323,6 +323,17 @@ public class Vector3d {
 		return this;
 	}
 	
+	/**
+	 * Check whether the given position is a valid position for a unit.
+	 * 
+	 * @param position
+	 *            The position to check.
+	 * @return True if and only if all doubles of the given position are larger
+	 *         than or equal to the lower bound and smaller than or equal to the
+	 *         upper bound. | result == (for (int i = 0; i < position.length;) |
+	 *         ((position[i] > LOWER_BOUND) && | (position[i] < UPPER_BOUND)))
+	 */
+
 	public boolean isValidPosition(double[] position) {
 		for (int i = 0; i < position.length; i++) {
 			if ((position[i] < 0.5) || (position[i] > 49.5)) {
@@ -332,6 +343,17 @@ public class Vector3d {
 		return true;
 	}
 	
+	/**
+	 * Check whether the given position is a valid position for a unit.
+	 * 
+	 * @param position
+	 *            The position to check.
+	 * @return True if and only if all doubles of the given position are larger
+	 *         than or equal to the lower bound and smaller than or equal to the
+	 *         upper bound. | result == (for (int i = 0; i < position.length;) |
+	 *         ((position[i] > LOWER_BOUND) && | (position[i] < UPPER_BOUND)))
+	 */
+
 	public boolean isValidPosition() {
 		
 		for (int i = 0; i <= 2; i++) {

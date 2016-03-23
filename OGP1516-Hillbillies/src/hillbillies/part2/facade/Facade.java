@@ -2,6 +2,7 @@ package hillbillies.part2.facade;
 
 import java.util.Set;
 
+import helperclasses.NameException;
 import helperclasses.OutOfBoundsException;
 import helperclasses.Vector3d;
 import hillbillies.model.Boulder;
@@ -46,7 +47,12 @@ public class Facade implements IFacade {
 	
 	@Override
 	public void setName(Unit unit, String newName) throws ModelException {
-		unit.setName(newName);
+		try {
+			unit.setName(newName);
+		} catch (NameException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
