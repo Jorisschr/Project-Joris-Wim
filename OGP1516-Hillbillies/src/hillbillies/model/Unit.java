@@ -271,7 +271,7 @@ public class Unit {
 	 * @post   This units position is the specified position
 	 * 			|this.position == newPos
 	 */
-	private void setPosition(Vector3d newPos) throws OutOfBoundsException {
+	public void setPosition(Vector3d newPos) throws OutOfBoundsException {
 		if (!newPos.isValidPosition()) {
 			throw new OutOfBoundsException(newPos.getDoubleArray());
 		}
@@ -601,7 +601,7 @@ public class Unit {
 	 * @param stamina
 	 * 			The value to set this units stamina to
 	 */
-	private void setStamina(int stamina) {
+	public void setStamina(int stamina) {
 		if ((stamina >= 0) && (stamina <= this.getMaxHitpoints()))
 			this.stamina = stamina;
 
@@ -624,9 +624,9 @@ public class Unit {
 		double basevel = 0.75 * (this.getStrength() + this.getAgility()) / this.getWeight();
 		double walkvel;
 
-		if (z > 0) {
+		if (z < 0) {
 			walkvel = 1.2 * basevel;
-		} else if (z < 0) {
+		} else if (z > 0) {
 			walkvel = 0.5 * basevel;
 		} else {
 			walkvel = basevel;
@@ -677,7 +677,7 @@ public class Unit {
 	public void updateSprinting(double dt) {
 		this.setSprintingTime(this.getSprintingTime() + dt);
 		
-		if (this.getSprintingTime() >= 0.1) {
+		while (this.getSprintingTime() >= 0.1) {
 			this.setSprintingTime(this.getSprintingTime() - 0.1);
 			this.setStamina(this.getStamina() - 1);
 			
@@ -704,9 +704,6 @@ public class Unit {
 	/**
 	 * Calculate the velocity of a unit.
 	 * 
-	 * @param x
-	 * @param y
-	 * @param z
 	 * @return
 	 */
 	public Vector3d calcVelocity(Vector3d vector) {

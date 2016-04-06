@@ -36,5 +36,8 @@ public class OutOfBoundsException extends Exception {
 	 * out of bounds exception.
 	 */
 	private final double[] position;
+	
+	
+	
 
 }
