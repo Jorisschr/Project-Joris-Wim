@@ -299,8 +299,8 @@ public class Unit {
 	 */
 	public boolean isAdjacentTo(Unit other){
 		
-		Vector3d thisCube = this.getPosition().getCube();
-		Vector3d otherCube = this.getPosition().getCube();
+		Vector3d thisCube = this.getPosition().getCubeCenter();
+		Vector3d otherCube = other.getPosition().getCubeCenter();
 
 		return (thisCube.subtract(otherCube).calcNorm() <= Math.sqrt(2));
 
@@ -529,7 +529,7 @@ public class Unit {
 	 *       2*PI, inclusively, the orientation of this unit will be changed to
 	 *       the specified angle.
 	 */
-	private void setOrientation(float angle) {
+	public void setOrientation(float angle) {
 		if ((angle >= -1 * Math.PI) && (angle <= (float) Math.PI)) {
 			this.orientation = angle;
 		}
@@ -553,7 +553,7 @@ public class Unit {
 	 * @param hitpoints
 	 * 			The value to set this units currents hitpoints to.
 	 */
-	private void setHitpoints(int hitpoints){
+	public void setHitpoints(int hitpoints){
 
 		if ((hitpoints >= getMinHitpoints()) && (hitpoints <= this.getMaxHitpoints())) {
 			this.hitpoints = hitpoints;
@@ -746,8 +746,10 @@ public class Unit {
 	 * 			 |this.destination = location
 	 */
 	public void moveTo(Vector3d  location) {
-		if (this.canBeInterrupted("Moving"))
+		if (this.canBeInterrupted("Moving")){
 			this.setStatus("Moving");
+		}
+			
 		
 		this.setDestination(location);
 
@@ -863,7 +865,7 @@ public class Unit {
 	/**
 	 * Return the current status of this unit.
 	 */
-	private String getStatus() {
+	public String getStatus() {
 		return this.status;
 	}
 
@@ -872,7 +874,7 @@ public class Unit {
 	 * 
 	 * @post The units activity is changed to the given activity.
 	 */
-	private void setStatus(String activity) {
+	public void setStatus(String activity) {
 		this.status = activity;
 	}
 
@@ -1084,7 +1086,7 @@ public class Unit {
 	public void attack(Unit defender) {
 		// TODO: exceptions for when two units are from the same faction.
 		// TODO: look again at orientation: not yet on point (see tests: put 9 units in a square and make the centre unit fight everyone else).
-		if (this.isAdjacentTo(defender)){
+		if (this.isAdjacentTo(defender) && this != defender){
 			float attackerOr = (float) Math.atan2(defender.getPosition().getY() - this.getPosition().getY(),
                     defender.getPosition().getX() - this.getPosition().getX());
 			float defenderOr = (float) Math.atan2(this.getPosition().getY() - defender.getPosition().getY(),
@@ -1120,7 +1122,7 @@ public class Unit {
 	 * 
 	 * @return 	this units opponent in the current attack
 	 */
-	private Unit getOpponent() {
+	public Unit getOpponent() {
 		return this.opponent;
 	}
 	
@@ -1144,30 +1146,7 @@ public class Unit {
 		boolean dodged = (new Random().nextDouble() <= dodgeProb);
 
 		if (dodged == true) {
-			Vector3d pos = this.getPosition();
-			Vector3d evasion = new Vector3d();
-			boolean foundNewPos = false;
-			 while (foundNewPos == false) {
-				for (int i = 0; i < 2; i++) {
-
-					double plus = new Random().nextDouble();
-					double randomValue = -1 + 2 * plus;
-					evasion.setDimension(i,randomValue);
-				}
-				Vector3d newPos = new Vector3d();
-
-				for (int i = 0; i < 2; i++)
-
-					newPos.setDimension(i, pos.getDimension(i) + evasion.getDimension(i));
-				foundNewPos = true;
-				// TODO create passable terrain check in World class
-				try {
-					this.setPosition(newPos);
-				} catch (OutOfBoundsException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+			this.dodge(attacker);
 			int curXP = this.getExperience();
 			this.setXP(curXP + 20);
 		} else {
@@ -1175,10 +1154,7 @@ public class Unit {
 					/ (attacker.getStrength() - attacker.getAgility());
 			boolean blocked = (new Random().nextDouble() <= blockProb);
 			if (blocked != true) {
-				double curHealth = this.getHitpoints();
-				double damage = attacker.getStrength() / 10;
-				this.setHitpoints((int) (curHealth - damage));
-				
+				attacker.doDamage(this);
 				int curXP = attacker.getExperience();
 				attacker.setXP(curXP + 20);
 			} else {
@@ -1195,6 +1171,40 @@ public class Unit {
 	
 	
 	
+	public void doDamage(Unit defender) {
+		double curHealth = defender.getHitpoints();
+		double damage = this.getStrength() / 10;
+		defender.setHitpoints((int) (curHealth - damage));
+	}
+
+	public void dodge(Unit attacker) {
+		Vector3d pos = this.getPosition();
+		Vector3d evasion = new Vector3d();
+		boolean foundNewPos = false;
+		 while (foundNewPos == false) {
+			for (int i = 0; i < 2; i++) {
+
+				double plus = new Random().nextDouble();
+				double randomValue = -1 + 2 * plus;
+				evasion.setDimension(i,randomValue);
+			}
+			Vector3d newPos = new Vector3d();
+
+			for (int i = 0; i < 2; i++)
+
+				newPos.setDimension(i, pos.getDimension(i) + evasion.getDimension(i));
+			foundNewPos = true;
+			// TODO create passable terrain check in World class
+			try {
+				this.setPosition(newPos);
+			} catch (OutOfBoundsException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		 }
+		
+	}
+
 	///////////////
 	/// RESTING ///
 	///////////////
@@ -1391,7 +1401,7 @@ public class Unit {
 		return this.experience;
 	}
 	
-	private void setXP(int experience){
+	public void setXP(int experience){
 		this.experience = experience;
 		
 		if (this.getExperience() >= 10) {

@@ -164,6 +164,19 @@ public class Vector3d {
 		Vector3d cube = new Vector3d(Math.floor(this.getX()), Math.floor(this.getY()), Math.floor(this.getZ()));
 		return cube;
 	}
+	
+	/**
+	 * Return a vector containing the center of the cube at this location. 
+	 * @ return  A new Vector3d with three doubles as it's coordinates,
+	 * 			 which are the floor of the old Vector3d + 0.5.
+	 * 
+	 */
+	public Vector3d getCubeCenter(){
+		Vector3d cube = this.getCube();
+		Vector3d center = new Vector3d(cube.getX()+0.5,cube.getY()+0.5,cube.getZ()+0.5);
+		
+		return center;
+	}
 	/**
 	 * Set the x coordinate of this vector to the given value.
 	 * 
