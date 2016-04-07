@@ -112,10 +112,10 @@ public class World {
 	private static final int MAX_UNITS = 100;
 	private static final int MAX_FACTIONS = 5;
 	
-	private static final int TYPE_AIR = 0;
-	private static final int TYPE_ROCK = 1;
-	private static final int TYPE_TREE = 2;
-	private static final int TYPE_WORKSHOP = 3;
+	public static final int TYPE_AIR = 0;
+	public static final int TYPE_ROCK = 1;
+	public static final int TYPE_TREE = 2;
+	public static final int TYPE_WORKSHOP = 3;
 	
 	private static int[][][] terrain;
 	

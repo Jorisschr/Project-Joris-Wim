@@ -4,16 +4,12 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import helperclasses.NameException;
 import helperclasses.OutOfBoundsException;
 import helperclasses.Vector3d;
-import hillbillies.model.Faction;
 import hillbillies.model.Unit;
 
 public class UnitTest {

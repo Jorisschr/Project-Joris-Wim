@@ -2,8 +2,6 @@ package helperclasses;
 
 import java.util.Random;
 
-import hillbillies.model.World;
-
 public class Vector3d {
 	
 	/**

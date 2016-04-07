@@ -62,7 +62,7 @@ public abstract class GameObject {
 	 * @param   velocity
 	 * 			The new velocity for this  to have.
 	 */
-	protected void setVelocity(Vector3d velocity){
+	public void setVelocity(Vector3d velocity){
 		this.velocity = velocity;
 	}
 	
