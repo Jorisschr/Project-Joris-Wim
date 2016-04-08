@@ -1146,7 +1146,7 @@ public class Unit {
 		boolean dodged = (new Random().nextDouble() <= dodgeProb);
 
 		if (dodged == true) {
-			this.dodge(attacker);
+			this.dodge();
 			int curXP = this.getExperience();
 			this.setXP(curXP + 20);
 		} else {
@@ -1177,22 +1177,24 @@ public class Unit {
 		defender.setHitpoints((int) (curHealth - damage));
 	}
 
-	public void dodge(Unit attacker) {
+	public void dodge() {
 		Vector3d pos = this.getPosition();
 		Vector3d evasion = new Vector3d();
 		boolean foundNewPos = false;
 		 while (foundNewPos == false) {
 			for (int i = 0; i < 2; i++) {
 
-				double plus = new Random().nextDouble();
-				double randomValue = -1 + 2 * plus;
+				double plus = new Random().nextInt(3);
+				double randomValue = -1 +  plus;
 				evasion.setDimension(i,randomValue);
 			}
 			Vector3d newPos = new Vector3d();
 
 			for (int i = 0; i < 2; i++)
-
 				newPos.setDimension(i, pos.getDimension(i) + evasion.getDimension(i));
+			
+			newPos.setDimension(2,this.getPosition().getZ());
+			
 			foundNewPos = true;
 			// TODO create passable terrain check in World class
 			try {
