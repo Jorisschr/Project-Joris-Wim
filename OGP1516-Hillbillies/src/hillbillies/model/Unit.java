@@ -1331,6 +1331,7 @@ public class Unit {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 			if (this.getPosition() == this.getNextPosition()) {
 				if ((this.destinationReached()) || (this.getDestination().getX() == -1)) {				
 					this.setStatus("Idle");	

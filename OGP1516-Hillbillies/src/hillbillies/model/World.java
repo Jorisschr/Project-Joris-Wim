@@ -1,5 +1,6 @@
 package hillbillies.model;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -372,6 +373,27 @@ public class World {
 			try {
 				unit.advanceTime(dt);
 			} catch (Throwable e) {
+				System.out.println("Exception while advancing time for Unit: " + unit.getName() + 
+								   ",at: " + Arrays.toString(unit.getPosition().getDoubleArray()));
+				e.printStackTrace();
+			}
+		}
+		 
+		for (Boulder boulder: this.getBoulders()){
+			try{
+				boulder.advanceTime(dt);
+			} catch (Throwable e) {
+				System.out.println("Exception while advancing time for Boulder at: " + boulder.getPosition());
+				e.printStackTrace();
+			}
+		}
+		
+		for (Log log: this.getLogs()){
+			try{
+				log.advanceTime(dt);
+			} catch (Throwable e) {
+				System.out.println("Exception while advancing time for Log at: " + log.getPosition());
+				e.printStackTrace();
 			}
 		}
 	}
