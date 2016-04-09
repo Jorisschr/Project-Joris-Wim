@@ -14,23 +14,25 @@ public abstract class GameObject {
 			throw new OutOfBoundsException(position.getDoubleArray());
 		}
 		Random r = new Random();
-		double weight = 10 + 40 * r.nextDouble();
+		int weight = (int) (10 + 40 * r.nextDouble());
 		this.weight = weight;
 		this.position = middle;
 		this.velocity = new Vector3d(0,0,0);
 		this.falling = false;
+		this.world = null;
 	}
 	
-	private double weight;
+	private int weight;
 	private Vector3d position;
 	private Vector3d velocity;
 	private boolean falling;
+	private World world;
 	
 	/**
 	 * Return the weight of this game object.
 	 * @return this.weight
 	 */
-	public double getWeight(){
+	public int getWeight(){
 		return this.weight;
 	}
 	
@@ -74,6 +76,13 @@ public abstract class GameObject {
 		return this.velocity;
 	}
 	
+	public abstract int getType();
+	public abstract void setCarrier(Unit unit);
+	public abstract Unit getCarrier();
+	public abstract void setWorld(World world);
+	public abstract World getWorld();
+
+	
 	/**
 	 * Checks if this  has solid ground beneath it.
 	 * @return	true if the cube below this game object is solid.
@@ -82,7 +91,7 @@ public abstract class GameObject {
 	public boolean canStand(){
 		Vector3d position = this.getPosition();
 		position.setZ(position.getZ()-1);
-		return World.isSolid(position);
+		return this.getWorld().isSolid(position);
 	}
 	
 	/**

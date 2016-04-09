@@ -8,12 +8,10 @@ import helperclasses.OutOfBoundsException;
 public class Faction {
 	public Faction(){
 		this.unitSet = Collections.emptySet();
-		this.nbUnits = 0;
 	}
 	
 	public static final int MAX_MEMBERS = 50;
 	private Set<Unit> unitSet;
-	private int nbUnits;
 	
 	public Set<Unit> getUnits() {
 		return this.unitSet;

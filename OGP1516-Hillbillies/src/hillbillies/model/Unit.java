@@ -123,6 +123,8 @@ public class Unit {
 		this.opponent = null;
 		this.experience = 0;
 		this.faction = new Faction();
+		this.carries = null;
+		this.world = null;
 	}
 
 	/**
@@ -245,6 +247,8 @@ public class Unit {
 	 */
 	private int experience;
 	
+	private GameObject carries;
+	private World world;
 	
 	/**
 	 * Variable registering this units faction.
@@ -426,13 +430,21 @@ public class Unit {
 	 * @post If the given weight is in range of the weight for a unit and the
 	 *       given weight is at least the sum of the unit's strength and agility
 	 *       divided by 2, then the new weight of this unit is equal to the
-	 *       given weight. | if ((weight >= MIN_ATTRIBUTE) && (weight <=
-	 *       MAX_ATTRIBUTE) && | (weight >= (this.getAgility() +
-	 *       this.getStrength()) / 2)) | then new.getWeight == weight
+	 *       given weight. 
+	 *       | if ((weight >= MIN_ATTRIBUTE) && (weight <= MAX_ATTRIBUTE) && 
+	 *       | 					(weight >= (this.getAgility() + this.getStrength()) / 2)) 
+	 *       | 	then new.getWeight == weight
+	 * @post If the unit is carrying a game object it is allowed 
+	 *       to surpass the given MAX_ATTRIBUTE.
+	 *       | if ((this.isCarryingBoulder()) || (this.isCarryingLog())) 
+	 *       |	then new.getWeight() = weight
 	 */
 	public void setWeight(int weight) {
 		if ((weight >= MIN_ATTRIBUTE) && (weight <= MAX_ATTRIBUTE)
 				&& (weight >= ((this.getAgility() + this.getStrength()) / 2))) {
+			this.weight = weight;
+		}
+		else if ((this.isCarryingBoulder()) || (this.isCarryingLog())) {
 			this.weight = weight;
 		}
 		else {
@@ -534,6 +546,76 @@ public class Unit {
 			this.orientation = angle;
 		}
 
+	}
+		
+	public GameObject getCarry() {
+		return this.carries;
+	}
+	
+	private final int LOG_TYPE = 0;
+	private final int BOULDER_TYPE = 1;
+	
+	/*
+	 * Let the unit pick up the given game object.
+	 */
+	public void pickUp(GameObject object) {
+		this.carries = object;
+		this.setWeight(this.getWeight() + object.getWeight());
+	}
+	
+	/*
+	 * Make the unit drop the game object it is (or is not) carrying.
+	 */
+	public void dropItem() {
+		this.getCarry().setCarrier(null);
+		this.setWeight(this.getWeight() - this.getCarry().getWeight());
+		this.pickUp(null);
+	}
+	
+	/**
+	 * Return whether this unit is carrying a log.
+	 * @return	True if and only if this unit is carrying a log.
+	 * 			| this.getCarry().getType() == LOG
+	 */
+	public boolean isCarryingLog() {
+		if (this.getCarry() != null) {
+			return this.getCarry().getType() == LOG_TYPE;
+		}
+		return false;
+	}
+	
+	/**
+	 * Return whether this unit is carrying a boulder.
+	 * @return	True if and only if this unit is carrying a boulder.
+	 * 			| return this.getCarry().getType() == BOULDER
+	 */
+	public boolean isCarryingBoulder() {
+		if (this.getCarry() != null) {
+			return this.getCarry().getType() == BOULDER_TYPE;
+		}
+		return false;
+	}
+	
+	public void setWorld(World world) {
+		this.world = world;
+	}
+	
+	public World getWorld() {
+		return this.world;
+	}
+	
+	/**
+	 * Upgrade the equipment of a unit by increasing its toughness and weight by 1.
+	 * 
+	 * @post 	The new toughness of this unit has increased by 1.
+	 * 			| new.getToughness() = this.getToughnes() + 1
+	 * 
+	 * @post	The new weight of this unit has increased by 1.
+	 * 			| new.getWeight() = this.getWeight() + 1
+	 */
+	public void upgradeEquipment() {
+		this.setToughness(this.getToughness() + 1);
+		this.setWeight(this.getWeight() + 1);
 	}
 	
 	
@@ -1286,7 +1368,38 @@ public class Unit {
 		// TODO: A LOT OF WORK HAS TO BE DONE HERE.
 		this.setActivityProgress(0);
 		this.setStatus("Idle");
-			
+		
+		World world = this.getWorld();
+		Vector3d pos = this.getPosition();
+		int cubeType = world.getCubeType(pos);
+		
+		if ((this.isCarryingBoulder()) || (this.isCarryingLog())) {
+			this.dropItem();
+		}
+		else if (cubeType == World.TYPE_WORKSHOP) {
+			if ((world.isBoulderAvailable(pos)) && (world.isLogAvailable(pos))) {
+				this.upgradeEquipment();
+			}
+		}
+		else if(world.isBoulderAvailable(pos)) {
+			this.pickUp(world.getSelectedBoulder());			
+		}
+		else if(world.isLogAvailable(pos)) {
+			this.pickUp(world.getSelectedLog());		
+		}
+		else if (cubeType == World.TYPE_ROCK) {
+			try {
+				world.addBoulder(new Boulder(pos));
+			} catch (OutOfBoundsException e) {
+			}
+		}
+		else if (cubeType == World.TYPE_TREE) {
+			try {
+				world.addLog(new Log(pos));
+			} catch (OutOfBoundsException e) {
+			}
+		}
+		world.resetSelection();
 	}
 
 	////////////////////
@@ -1357,8 +1470,8 @@ public class Unit {
 			// if work is finished, change game world.
 			this.setActivityProgress(this.getActivityProgress() + dt);
 			if (this.getActivityProgress() >= this.getTimeNeeded()) {
-				this.workDone();
-				
+				this.workDone();				
+							
 				int curXP = this.getExperience();
 				this.setXP (curXP + 10);
 			}

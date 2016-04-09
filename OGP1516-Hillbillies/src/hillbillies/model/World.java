@@ -60,6 +60,8 @@ public class World {
 		this.factionSet = Collections.emptySet();
 		this.boulderSet = Collections.emptySet();
 		this.logSet = Collections.emptySet();
+		this.selectedBoulder = null;
+		this.selectedLog = null;
 	}
 	
 	private void updateConnections() {
@@ -148,6 +150,8 @@ public class World {
 	private Set<Faction> factionSet;
 	private Set<Boulder> boulderSet;
 	private Set<Log> logSet;
+	private Boulder selectedBoulder;
+	private Log selectedLog;
 
 	/*
 	 * Return the number of cubes in the world in the x-direction.
@@ -187,7 +191,7 @@ public class World {
 		return World.terrain[x][y][z];
 	}
 	
-	public static int getCubeType(Vector3d position) {
+	public int getCubeType(Vector3d position) {
 		Vector3d cube = position.getCube();
 		
 		return World.terrain[(int) cube.getX()][(int) cube.getY()][(int) cube.getZ()];
@@ -223,7 +227,7 @@ public class World {
 	 * @return  True if the World's cube at this position is solid.
 	 * 	    	| ((getCubeType(position.getCube) == 1) || (getCubeType(position.getCube()) == 2))
 	 */
-	public static boolean isSolid(Vector3d position) {
+	public boolean isSolid(Vector3d position) {
 		return ((getCubeType(position.getCube()) == TYPE_ROCK) || 
 				(getCubeType(position.getCube()) == TYPE_TREE));
 	}
@@ -431,11 +435,79 @@ public class World {
 		return this.boulderSet;
 	}
 	
+	/**
+	 * Set the selected boulder of this world to the given boulder.
+	 */
+	public void setSelectedBoulder(Boulder boulder) {
+		this.selectedBoulder = boulder;
+	}
+	
+	/**
+	 * Return the selected boulder of this world.
+	 */
+	public Boulder getSelectedBoulder() {
+		return this.selectedBoulder;
+	}
+	
+	/**
+	 * Return whether a boulder is available at the given position in the given world.
+	 * @param 	pos
+	 * 			The position to check.
+	 * @return	True if and only if a boulder has the same position as the given position.
+	 */
+	public boolean isBoulderAvailable(Vector3d pos) {
+		for (Boulder boulder: this.getBoulders()) {
+			if(boulder.getPosition().equals(pos)) {
+				this.setSelectedBoulder(boulder);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public void addLog(Log log) {
 		this.logSet.add(log);
 	}
 	
 	public Set<Log> getLogs() {
 		return this.logSet;
+	}
+	
+	/**
+	 * Set the selected log of this world to the given log.
+	 */
+	public void setSelectedLog(Log log) {
+		this.selectedLog = log;
+	}
+	
+	/**
+	 * Return the selected log of this world.
+	 */
+	public Log getSelectedLog() {
+		return this.selectedLog;
+	}
+	
+	/**
+	 * Return whether a log is available at the given position in the given world.
+	 * @param 	pos
+	 * 			The position to check.
+	 * @return	True if and only if a log has the same position as the given position.
+	 */
+	public boolean isLogAvailable(Vector3d pos) {
+		for (Log log: this.getLogs()) {
+			if (log.getPosition().equals(pos)) {
+				this.setSelectedLog(log);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/*
+	 * Reset the selected boulder and log to null.
+	 */
+	public void resetSelection() {
+		this.setSelectedBoulder(null);
+		this.setSelectedLog(null);
 	}
 }

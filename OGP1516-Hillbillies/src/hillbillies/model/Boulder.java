@@ -16,6 +16,33 @@ public class Boulder extends GameObject {
 	 */
 	public Boulder(Vector3d position) throws OutOfBoundsException{
 		super(position);
+		Boulder.type = 1;
+		this.carrier = null;
+		this.world = null;
+	}
+	
+	private static int type;
+	private Unit carrier;
+	private World world;
+	
+	public int getType() {
+		return type;
+	}
+	
+	public Unit getCarrier() {
+		return this.carrier;
+	}
+	
+	public void setCarrier(Unit unit) {
+		this.carrier = unit;
+	}
+	
+	public World getWorld() {
+		return this.world;
+	}
+	
+	public void setWorld(World world) {
+		this.world = world;
 	}
 	
 	/**
