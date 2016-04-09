@@ -1441,12 +1441,24 @@ public class Unit {
 	////////////////////
 	/// UNIT FACTION ///
 	////////////////////
+	
+	/**
+	 * Return the faction to which this unit belongs.
+	 */
 	public Faction getFaction() {
 		return this.faction;
 	}
 	
+	/**
+	 * Add this unit to the given faction.
+	 * @param 	faction
+	 * 			The faction to which the unit will be added
+	 * 
+	 * @post 	The units new faction will be faction
+	 * 			| new.getFaction == faction
+	 */
 	public void setFaction(Faction faction) {
-		faction.addUnit(this);
+			faction.addUnit(this);	
 	}
 }
 

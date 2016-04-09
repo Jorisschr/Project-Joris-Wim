@@ -305,13 +305,13 @@ public class World {
 	public void addUnit(Unit unit) {
 		if (this.getNbUnits() < MAX_UNITS) {
 			this.unitSet.add(unit);
-			if (this.getActiveFactions().size() < 5) {
+			if (this.getActiveFactions().size() < MAX_FACTIONS) {
 				Faction faction = new Faction();
 				this.addFaction(faction);
-				faction.addUnit(unit);
+				faction.addUnit(unit);				
 			}
-			else {
-				
+			else if (!this.getSmallestFaction().isFactionFull()) {
+				this.getSmallestFaction().addUnit(unit);
 			}
 		}
 	}
@@ -401,18 +401,28 @@ public class World {
 	public void addFaction(Faction faction) {
 		this.factionSet.add(faction);
 	}
+	
 	public Set<Faction> getActiveFactions() {
 		return this.factionSet;
 	}
+
 	
-	// nog niet klaar!!
+	/**
+	 * Return the smallest active faction of this world. 
+	 * (IE. the faction with the least number of members)
+	 */
 	public Faction getSmallestFaction() {
 		Faction smallestFaction = new Faction();
+		int nbMembers = Faction.MAX_MEMBERS + 1;
 		for (Faction faction: this.getActiveFactions()) {
-			
+			if (faction.getNbUnits() < nbMembers) {
+				nbMembers = faction.getNbUnits();
+				smallestFaction = faction;
+			}
 		}
 		return smallestFaction;
 	}
+	
 	public void addBoulder(Boulder boulder) {
 		this.boulderSet.add(boulder);
 	}
