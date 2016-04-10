@@ -248,6 +248,11 @@ public class Unit {
 	 */
 	private int experience;
 	
+	/**
+	 * Boolean registering weither this unit is alive or not.
+	 */
+	private boolean alive;
+	
 	private GameObject carries;
 	private World world;
 	private Vector3d target;
@@ -1275,14 +1280,47 @@ public class Unit {
 		}
 	}
 	
-	
+	/**
+	 * Do damage hitpoints to the defender, and check if the strike is fatal for the defender. If so, terminate the defender.
+	 * 
+	 * @param defender
+	 * 		  The defending unit.
+	 */
 	
 	public void doDamage(Unit defender) {
 		double curHealth = defender.getHitpoints();
 		double damage = this.getStrength() / 10;
 		defender.setHitpoints((int) (curHealth - damage));
+		
+		if (defender.getHitpoints()<=0) {
+			defender.setHitpoints(0);
+			defender.die();
+		}
 	}
-
+	
+	/**
+	 * Terminate the unit. Drop its' object if it was carrying something, remove it from its' faction, and change its' state to not alive.
+	 * 
+	 */
+	public void die(){
+		if (this.carries!=null){
+			this.dropItem();
+		}
+		
+		this.getFaction().removeUnit(this);
+		this.alive = false;
+	}
+	
+	/**
+	 * Return the current living state of this unit
+	 * 
+	 * @return True if this unit is currently alive.
+	 */
+	public boolean isAlive(){
+		return this.alive;
+	}
+	
+	
 	public void dodge() {
 		Vector3d pos = this.getPosition();
 		Vector3d evasion = new Vector3d();
@@ -1369,9 +1407,7 @@ public class Unit {
 			this.setHitpoints(this.getHitpoints() + 1);
 		}
 	}
-	
-	
-	
+
 	
 	///////////////
 	/// WORKING ///

@@ -24,6 +24,16 @@ public class Faction {
 
 	}
 	
+	public void removeUnit(Unit unit){
+		try { 
+			this.unitSet.remove(unit);
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		}
+		
+		unit.setFaction(null);
+	}
+	
 	public int getNbUnits() {
 		return this.unitSet.size();
 	}
