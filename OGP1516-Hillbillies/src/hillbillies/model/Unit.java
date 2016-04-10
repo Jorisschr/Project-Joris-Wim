@@ -1494,12 +1494,11 @@ public class Unit {
 	 * @throws 	IllegalArgumentException
 	 * 			Throws an IllegalArgumentException if the given dt is larger than 0.2 .
 	 */
-	public void advanceTime(double dt) throws IllegalArgumentException, InterruptedException {
+	public void advanceTime(double dt) {
 		if (!isValidDuration(dt)) {
 			throw new IllegalArgumentException();
 		}
 
-		TimeUnit.MILLISECONDS.sleep((long) dt * 1000);
 		this.setCounter(this.getCounter() + dt);
 
 		if (this.getCounter() >= REST_INTERVAL) {

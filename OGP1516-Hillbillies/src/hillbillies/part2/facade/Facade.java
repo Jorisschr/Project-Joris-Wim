@@ -116,13 +116,7 @@ public class Facade implements IFacade {
 	}
 	
 	@Override
-	public void advanceTime(Unit unit, double dt) throws ModelException {
-
-				try {
-					unit.advanceTime(dt);
-				} catch (IllegalArgumentException | InterruptedException e) {
-					throw new ModelException();
-				}					
+	public void advanceTime(Unit unit, double dt) throws ModelException {				
 	}
 	
 	@Override
@@ -228,7 +222,11 @@ public class Facade implements IFacade {
 
 	@Override
 	public void advanceTime(World world, double dt) throws ModelException {
-		world.advanceTime(dt);
+		try {
+			world.advanceTime(dt);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -274,14 +272,12 @@ public class Facade implements IFacade {
 
 	@Override
 	public boolean isAlive(Unit unit) throws ModelException {
-		// TODO Auto-generated method stub
-		return false;
+		return unit.isAlive();
 	}
 
 	@Override
 	public int getExperiencePoints(Unit unit) throws ModelException {
-		// TODO Auto-generated method stub
-		return 0;
+		return unit.getExperience();
 	}
 
 	@Override

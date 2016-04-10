@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 import helperclasses.*;
 import hillbillies.part2.listener.TerrainChangeListener;
@@ -305,7 +306,8 @@ public class World {
 		int toughness = ThreadLocalRandom.current().nextInt(25, 100 + 1);
 						
 		try {
-			return new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
+			Unit hillbilly = new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
+			return hillbilly;		
 		} catch (Throwable exc) {							
 		}
 		// hoe niks doen als er al 100 unit zijn?
@@ -381,33 +383,19 @@ public class World {
 		return rndPos;
 	}
 	
-	public void advanceTime(double dt) {
+	public void advanceTime(double dt) throws InterruptedException {
+		
+		TimeUnit.MILLISECONDS.sleep((long) dt * 1000);
 		for (Unit unit: this.getUnits()) {
-			try {
 				unit.advanceTime(dt);
-			} catch (Throwable e) {
-				System.out.println("Exception while advancing time for Unit: " + unit.getName() + 
-								   ",at: " + Arrays.toString(unit.getPosition().getDoubleArray()));
-				e.printStackTrace();
-			}
 		}
 		 
 		for (Boulder boulder: this.getBoulders()){
-			try{
-				boulder.advanceTime(dt);
-			} catch (Throwable e) {
-				System.out.println("Exception while advancing time for Boulder at: " + boulder.getPosition());
-				e.printStackTrace();
-			}
+			boulder.advanceTime(dt);
 		}
 		
 		for (Log log: this.getLogs()){
-			try{
 				log.advanceTime(dt);
-			} catch (Throwable e) {
-				System.out.println("Exception while advancing time for Log at: " + log.getPosition());
-				e.printStackTrace();
-			}
 		}
 	}
 	

@@ -109,13 +109,7 @@ public class Facade implements IFacade {
 	}
 	
 	@Override
-	public void advanceTime(Unit unit, double dt) throws ModelException {
-
-				try {
-					unit.advanceTime(dt);
-				} catch (IllegalArgumentException | InterruptedException e) {
-					throw new ModelException();
-				}					
+	public void advanceTime(Unit unit, double dt) throws ModelException {				
 	}
 	
 	@Override
