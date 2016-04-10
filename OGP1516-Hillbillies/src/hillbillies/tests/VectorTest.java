@@ -13,6 +13,7 @@ public class VectorTest {
 	private static final Vector3d v5 = new Vector3d(new double[] {2, 4, 6});
 	private static final Vector3d intv = new Vector3d((int) 1, (int) 1, (int) 1);
 	private static final Vector3d nullVector = new Vector3d (0, 0, 0);
+	private static final Vector3d doubleVector = new Vector3d(1.5, 6.8, 20.3);
 
 	
 	
@@ -106,6 +107,12 @@ public class VectorTest {
 	@Test
 	public void testCrossProduct() {
 		assert(v1.crossProduct(v2).equals(new Vector3d(-3, 6, -3)));
+	}
+	
+	@Test
+	public void testRoundDown() {
+		assert(doubleVector.roundDown().equals(new Vector3d(1, 6, 20)));
+		assert(v1.roundDown().equals(v1));
 	}
 
 }

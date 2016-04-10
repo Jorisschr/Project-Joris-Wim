@@ -380,4 +380,13 @@ public class Vector3d {
 		Random r = new Random();
 		return new Vector3d(r.nextInt(upperX),r.nextInt(upperY),r.nextInt(upperZ));
 	}
+	
+	public Vector3d roundDown() {
+		Vector3d rounded = new Vector3d();
+		
+		for (int i = 0; i < 3; i++) {
+			rounded.setDimension(i, (int) this.getDimension(i));
+		}		
+		return rounded;
+	}
 }

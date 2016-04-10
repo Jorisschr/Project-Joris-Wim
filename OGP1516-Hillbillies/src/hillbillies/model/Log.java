@@ -16,7 +16,7 @@ public class Log extends GameObject {
 	 */
 	public Log(Vector3d position) throws OutOfBoundsException{
 		super(position);
-		Log.type = 0;
+		Log.type = TYPE;
 		this.carrier = null;
 		this.world = null;
 	}
@@ -24,7 +24,7 @@ public class Log extends GameObject {
 	private static int type;
 	private Unit carrier;
 	private World world;
-	
+	public static int TYPE = 0;
 	public int getType() {
 		return type;
 	}

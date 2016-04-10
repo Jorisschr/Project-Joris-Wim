@@ -65,8 +65,8 @@ public class Unit {
 	public Unit(String name, Vector3d position, int weight, int agility, int strength, int toughness,
 			boolean enableDefaultBehavior) throws OutOfBoundsException, IllegalArgumentException {
 		
-		double[] cube = position.getCube().getDoubleArray();
-		Vector3d pos = new Vector3d( (double) cube[0] + 0.5, (double) cube[1] + 0.5, (double) cube[2] + 0.5 );
+
+		Vector3d pos = position.getCube().add(0.5);
 		if (!pos.isValidPosition()) {
 			// display message?
 			throw new OutOfBoundsException(pos.getDoubleArray());
@@ -112,7 +112,7 @@ public class Unit {
 		this.enableDefaultBehavior = enableDefaultBehavior;
 		this.status = "Idle";
 		this.speed = 0;
-		this.velocity = new Vector3d(0, 0, 0);
+		this.velocity = new Vector3d();
 		this.activityProgress = 0;
 		this.timeNeeded = 0;
 		this.destination = new Vector3d(-1,-1,-1);
@@ -125,6 +125,7 @@ public class Unit {
 		this.faction = new Faction();
 		this.carries = null;
 		this.world = null;
+		this.target = new Vector3d();
 	}
 
 	/**
@@ -249,6 +250,7 @@ public class Unit {
 	
 	private GameObject carries;
 	private World world;
+	private Vector3d target;
 	
 	/**
 	 * Variable registering this units faction.
@@ -276,7 +278,7 @@ public class Unit {
 	 * 			|this.position == newPos
 	 */
 	public void setPosition(Vector3d newPos) throws OutOfBoundsException {
-		if (!newPos.isValidPosition()) {
+		if (!this.getWorld().isValidPosition(newPos)) {
 			throw new OutOfBoundsException(newPos.getDoubleArray());
 		}
 		this.position = newPos;
@@ -308,6 +310,18 @@ public class Unit {
 
 		return (thisCube.subtract(otherCube).calcNorm() <= Math.sqrt(2));
 
+	}
+	
+	/**
+	 * Check if the cube occupied by this unit is adjacent to the cube with the given coordinates.
+	 * 
+	 * @param 	coords
+	 * 			The coordinates of the adjacent (?) cube.
+	 * @return	True if and only if the distance between the units occupying cube 
+	 * 			and the cube with the given coords is smaller than or equal to sqrt(3).
+	 */
+	public boolean isAdjacentTo(Vector3d coords) {
+		return (new Vector3d(this.getOccupyingCube()).subtract(coords).calcNorm() <= Math.sqrt(3));
 	}
 	
 	/**
@@ -552,9 +566,6 @@ public class Unit {
 		return this.carries;
 	}
 	
-	private final int LOG_TYPE = 0;
-	private final int BOULDER_TYPE = 1;
-	
 	/*
 	 * Let the unit pick up the given game object.
 	 */
@@ -579,7 +590,7 @@ public class Unit {
 	 */
 	public boolean isCarryingLog() {
 		if (this.getCarry() != null) {
-			return this.getCarry().getType() == LOG_TYPE;
+			return this.getCarry().getType() == Log.TYPE;
 		}
 		return false;
 	}
@@ -591,7 +602,7 @@ public class Unit {
 	 */
 	public boolean isCarryingBoulder() {
 		if (this.getCarry() != null) {
-			return this.getCarry().getType() == BOULDER_TYPE;
+			return this.getCarry().getType() == Boulder.TYPE;
 		}
 		return false;
 	}
@@ -616,6 +627,14 @@ public class Unit {
 	public void upgradeEquipment() {
 		this.setToughness(this.getToughness() + 1);
 		this.setWeight(this.getWeight() + 1);
+	}
+	
+	public Vector3d getTarget() {
+		return this.target;
+	}
+	
+	public void setTarget(Vector3d vector) {
+		this.target = vector;
 	}
 	
 	
@@ -875,7 +894,7 @@ public class Unit {
 		
 		if (this.canBeInterrupted("Moving")) {
 			this.setStatus("Moving");
-			if(nextPos.isValidPosition(nextPos.getDoubleArray())) {
+			if(this.getWorld().isValidPosition(nextPos)) {
 				if(this.nextPositionReached()) {
 					this.setNextPosition(nextPos);
 					this.setSpeed((int) vector.getZ());
@@ -1099,7 +1118,12 @@ public class Unit {
 			Vector3d randomLoc = new Vector3d();
 
 			if (rnd == 0) {
-				this.work();
+				// TODO: random cube kiezen waarschijnlijk
+				// we nemen de cube eronder.
+				Vector3d target = this.getPosition();
+				target.setZ(target.getZ() - 1);
+				this.workAt(target);
+				
 			} else if (rnd == 1) {
 				this.rest();
 			} else if (rnd == 2) {
@@ -1125,8 +1149,8 @@ public class Unit {
 	 * Check whether the units current activity can be interrupted by the given
 	 * interruptor.
 	 * 
-	 * @param interruptor
-	 *            The interruptor
+	 * @param 	interruptor
+	 *          The interruptor
 	 */
 	public boolean canBeInterrupted(String interruptor) {
 		if (this.isIdle()) {
@@ -1353,14 +1377,40 @@ public class Unit {
 	/// WORKING ///
 	///////////////
 	/**
-	 * Initiate working for this unit.
+	 * Initiate working at the given position for this unit.
+	 * 
+	 * @param 	pos
+	 * 			The position at which this unit will start working.
+	 * @post 	If the units current activity can be interrupted by working, 
+	 * 			the given position is within this units worlds bounds, 
+	 * 			and the given position is adjacent to the units current position,
+	 * 			the unit will start working by updating its status, activity progress, 
+	 * 			time needed, target position and orientation.
+	 * 			| if (this.canBeInterrupted("Working")) 
+	 *			|	if ((this.getWorld().isValidPosition(pos)) &&
+	 *			|		(this.isAdjacentTo(pos.roundDown()))) 
+	 *			|	then
+	 *			| 		new.getActivityProgress() == 0
+	 *			|		new.getStatus() == "Working"
+	 *			|		new.getTimeNeeded() == this.setTimeNeeded()
+	 *			|		new.getTarget() == pos
+	 *			|		Vector3d diff = pos.subtract(this.getPosition())
+	 *			|		new.getOrientation() == this.setOrientation((float) Math.atan2(diff.getY(), 
+	 *			|																		diff.getX()))
 	 */
-	public void work() {
+	public void workAt(Vector3d pos) {
 
 		if (this.canBeInterrupted("Working")) {
-			this.setActivityProgress(0);
-			this.setStatus("Working");
-			this.setTimeNeeded();
+			if ((this.getWorld().isValidPosition(pos)) &&
+					(this.isAdjacentTo(pos.roundDown()))) {
+				this.setActivityProgress(0);
+				this.setStatus("Working");
+				this.setTimeNeeded();
+				this.setTarget(pos.roundDown());
+				Vector3d diff = pos.subtract(this.getPosition());
+				this.setOrientation((float) Math.atan2(diff.getY(), diff.getX()));
+			}
+			
 		}
 	}
 	
@@ -1388,16 +1438,10 @@ public class Unit {
 			this.pickUp(world.getSelectedLog());		
 		}
 		else if (cubeType == World.TYPE_ROCK) {
-			try {
-				world.addBoulder(new Boulder(pos));
-			} catch (OutOfBoundsException e) {
-			}
+				world.destroyCube(this.getTarget());
 		}
 		else if (cubeType == World.TYPE_TREE) {
-			try {
-				world.addLog(new Log(pos));
-			} catch (OutOfBoundsException e) {
-			}
+				world.destroyCube(this.getTarget());
 		}
 		world.resetSelection();
 	}

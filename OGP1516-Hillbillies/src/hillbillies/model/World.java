@@ -2,6 +2,7 @@ package hillbillies.model;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -43,7 +44,7 @@ public class World {
 	 * @throws ModelException
 	 */
 	public World(int[][][] terrainTypes, TerrainChangeListener modelListener) {
-		World.terrain = terrainTypes;
+		this.terrain = terrainTypes;
 		
 		this.nbX = terrainTypes.length;
 		this.nbY = terrainTypes[0].length;
@@ -104,7 +105,7 @@ public class World {
 	}
 	
 	public int[][][] getTerrain() {
-		return World.terrain;
+		return this.terrain;
 	}
 	/**
 	 * Variable registering the lower bound for the x, y and z dimensions of the
@@ -120,7 +121,7 @@ public class World {
 	public static final int TYPE_TREE = 2;
 	public static final int TYPE_WORKSHOP = 3;
 	
-	private static int[][][] terrain;
+	private int[][][] terrain;
 	
 	/*
 	 * Variable registering the number of cubes in the world in the x-direction.
@@ -188,13 +189,13 @@ public class World {
 	 *         {@link #createWorld(int[][][], TerrainChangeListener)}.
 	 */
 	public int getCubeType(int x, int y, int z) {
-		return World.terrain[x][y][z];
+		return this.terrain[x][y][z];
 	}
 	
 	public int getCubeType(Vector3d position) {
 		Vector3d cube = position.getCube();
 		
-		return World.terrain[(int) cube.getX()][(int) cube.getY()][(int) cube.getZ()];
+		return this.terrain[(int) cube.getX()][(int) cube.getY()][(int) cube.getZ()];
 	}
 	
 	/**
@@ -218,7 +219,14 @@ public class World {
 	 */
 	public void setCubeType(int x, int y, int z, int value) {
 		if ((value >= TYPE_AIR) && (value < TYPE_WORKSHOP)) {
-			World.terrain[x][y][z] = value;
+			this.terrain[x][y][z] = value;
+		}
+	}
+	
+	public void setCubeType(Vector3d cubePos, int value) {
+		if ((value >= TYPE_AIR) && (value < TYPE_WORKSHOP)) {
+			int[] coord = cubePos.getIntArray();
+			this.terrain[coord[0]][coord[1]][coord[2]] = value;
 		}
 	}
 	
@@ -309,6 +317,7 @@ public class World {
 	public void addUnit(Unit unit) {
 		if (this.getNbUnits() < MAX_UNITS) {
 			this.unitSet.add(unit);
+			unit.setWorld(this);
 			if (this.getActiveFactions().size() < MAX_FACTIONS) {
 				Faction faction = new Faction();
 				this.addFaction(faction);
@@ -509,5 +518,46 @@ public class World {
 	public void resetSelection() {
 		this.setSelectedBoulder(null);
 		this.setSelectedLog(null);
+	}
+	
+	/**
+	 * Change the type of the given cube to air and add a log or boulder with a probability of 25%
+	 * if the cube at the given position is respectively a tree of rock.
+	 * 
+	 * @param	cubePos
+	 * 			The position of the cube to be changed.
+	 */
+	public void destroyCube(Vector3d cubePos) {
+		int type = this.getCubeType(cubePos);
+		this.setCubeType(cubePos, TYPE_AIR);
+		
+		double prob = 0.25;
+		boolean spawn = (new Random().nextDouble() <= prob);
+		
+		if (spawn) {
+			Vector3d pos = cubePos.add(0.5);
+			
+			if (type == TYPE_ROCK) {
+				try {
+					this.addBoulder(new Boulder(pos));
+				} catch (OutOfBoundsException e) {
+					e.printStackTrace();
+				}
+			}
+			else if (type == TYPE_TREE) {
+				try {
+					this.addLog(new Log(pos));
+				} catch (OutOfBoundsException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	//TODO 
+	public void deleteObject(GameObject object) {
+		if (object.getType() == Log.TYPE) {
+			
+		}
 	}
 }

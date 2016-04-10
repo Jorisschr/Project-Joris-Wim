@@ -168,7 +168,7 @@ public class Facade implements IFacade {
 	
 	@Override
 	public void work(Unit unit) throws ModelException {
-		unit.work();
+		
 	}
 	
 	@Override
@@ -286,19 +286,18 @@ public class Facade implements IFacade {
 
 	@Override
 	public void workAt(Unit unit, int x, int y, int z) throws ModelException {
-		// TODO Auto-generated method stub
+		Vector3d pos = new Vector3d(x , y , z);
+		unit.workAt(pos);
 		
 	}
 
 	@Override
 	public Faction getFaction(Unit unit) throws ModelException {
-		// TODO Auto-generated method stub
 		return unit.getFaction();
 	}
 
 	@Override
 	public Set<Unit> getUnitsOfFaction(Faction faction) throws ModelException {
-		// TODO Auto-generated method stub
 		return faction.getUnits();
 	}
 
@@ -309,7 +308,6 @@ public class Facade implements IFacade {
 
 	@Override
 	public double[] getPosition(Boulder boulder) throws ModelException {
-		// TODO Auto-generated method stub
 		return boulder.getPosition().getDoubleArray();
 	}
 
@@ -320,7 +318,6 @@ public class Facade implements IFacade {
 
 	@Override
 	public double[] getPosition(Log log) throws ModelException {
-		// TODO Auto-generated method stub
 		return log.getPosition().getDoubleArray();
 	}
 
