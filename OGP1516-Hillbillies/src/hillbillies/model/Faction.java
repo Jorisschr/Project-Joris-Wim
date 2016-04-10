@@ -1,13 +1,11 @@
 package hillbillies.model;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-
-import helperclasses.OutOfBoundsException;
 
 public class Faction {
 	public Faction(){
-		this.unitSet = Collections.emptySet();
+		this.unitSet = new HashSet<Unit>();
 	}
 	
 	public static final int MAX_MEMBERS = 50;
@@ -18,10 +16,8 @@ public class Faction {
 	}
 	
 	public void addUnit(Unit unit) {
-		
-			this.unitSet.add(unit);
-			unit.setFaction(this);
-
+		unit.setFaction(this);
+		this.unitSet.add(unit);
 	}
 	
 	public void removeUnit(Unit unit){

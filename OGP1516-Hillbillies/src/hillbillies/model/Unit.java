@@ -1650,7 +1650,7 @@ public class Unit {
 	 * 			| new.getFaction == faction
 	 */
 	public void setFaction(Faction faction) {
-			faction.addUnit(this);	
+			this.faction = faction;
 	}
 }
 

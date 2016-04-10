@@ -2,12 +2,14 @@ package hillbillies.model;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import helperclasses.*;
+import hillbillies.part2.listener.DefaultTerrainChangeListener;
 import hillbillies.part2.listener.TerrainChangeListener;
 import hillbillies.util.ConnectedToBorder;
 import ogp.framework.util.ModelException;
@@ -58,10 +60,10 @@ public class World {
 		this.updateConnections();
 		
 		this.nbUnits = 0;
-		this.unitSet = Collections.emptySet();
-		this.factionSet = Collections.emptySet();
-		this.boulderSet = Collections.emptySet();
-		this.logSet = Collections.emptySet();
+		this.unitSet = new HashSet<Unit>() ;
+		this.factionSet = new HashSet<Faction>();
+		this.boulderSet = new HashSet<Boulder>();
+		this.logSet = new HashSet<Log>();
 		this.selectedBoulder = null;
 		this.selectedLog = null;
 	}
@@ -306,10 +308,12 @@ public class World {
 		int toughness = ThreadLocalRandom.current().nextInt(25, 100 + 1);
 						
 		try {
-			Unit hillbilly = new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
-			return hillbilly;		
+			Unit unit = new Unit(name, pos, weight, agility, strength, toughness, enableDefaultBehavior);
+			this.addUnit(unit);
+			return unit;
 		} catch (Throwable exc) {							
 		}
+
 		// hoe niks doen als er al 100 unit zijn?
 		// exception maken in Unit denk ik.
 		return null;
@@ -318,9 +322,9 @@ public class World {
 	
 	public void addUnit(Unit unit) {
 		if (this.getNbUnits() < MAX_UNITS) {
-			this.unitSet.add(unit);
-			unit.setWorld(this);
+
 			if (this.getActiveFactions().size() < MAX_FACTIONS) {
+				
 				Faction faction = new Faction();
 				this.addFaction(faction);
 				faction.addUnit(unit);				
@@ -328,6 +332,8 @@ public class World {
 			else if (!this.getSmallestFaction().isFactionFull()) {
 				this.getSmallestFaction().addUnit(unit);
 			}
+			unit.setWorld(this);
+			this.unitSet.add(unit);			
 		}
 	}
 	
@@ -518,7 +524,13 @@ public class World {
 	public void destroyCube(Vector3d cubePos) {
 		int type = this.getCubeType(cubePos);
 		this.setCubeType(cubePos, TYPE_AIR);
-		
+		new DefaultTerrainChangeListener().notifyTerrainChanged((int) cubePos.getX(), 
+														(int) cubePos.getY(), 
+														(int) cubePos.getZ());
+		this.connections.changeSolidToPassable((int) cubePos.getX(), 
+												(int) cubePos.getY(), 
+												(int) cubePos.getZ());
+				
 		double prob = 0.25;
 		boolean spawn = (new Random().nextDouble() <= prob);
 		
