@@ -1520,7 +1520,6 @@ public class Unit {
 			try {
 				this.updatePosition(dt);
 			} catch (OutOfBoundsException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -1545,8 +1544,6 @@ public class Unit {
 			}
 		} 
 		else if (this.isWorking()) {
-			// 'cast': if work isn't completed nothing happens, no progress is saved.
-			// if work is finished, change game world.
 			this.setActivityProgress(this.getActivityProgress() + dt);
 			if (this.getActivityProgress() >= this.getTimeNeeded()) {
 				this.workDone();				

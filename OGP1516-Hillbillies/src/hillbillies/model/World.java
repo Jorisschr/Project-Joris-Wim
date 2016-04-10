@@ -1,7 +1,5 @@
 package hillbillies.model;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -15,7 +13,7 @@ import hillbillies.util.ConnectedToBorder;
 import ogp.framework.util.ModelException;
 
 public class World {
-	
+
 	/**
 	 * Create a new world of the given size and with the given terrain. To keep
 	 * the GUI display up to date, the method in the given listener must be
@@ -66,6 +64,7 @@ public class World {
 		this.logSet = new HashSet<Log>();
 		this.selectedBoulder = null;
 		this.selectedLog = null;
+		this.terrainChangeListener = modelListener;
 	}
 	
 	private void updateConnections() {
@@ -156,6 +155,7 @@ public class World {
 	private Set<Log> logSet;
 	private Boulder selectedBoulder;
 	private Log selectedLog;
+	private TerrainChangeListener terrainChangeListener;
 
 	/*
 	 * Return the number of cubes in the world in the x-direction.
@@ -514,6 +514,10 @@ public class World {
 		this.setSelectedLog(null);
 	}
 	
+	public TerrainChangeListener getTerrainChangeListener() {
+		return this.terrainChangeListener;
+	}
+	
 	/**
 	 * Change the type of the given cube to air and add a log or boulder with a probability of 25%
 	 * if the cube at the given position is respectively a tree of rock.
@@ -524,12 +528,12 @@ public class World {
 	public void destroyCube(Vector3d cubePos) {
 		int type = this.getCubeType(cubePos);
 		this.setCubeType(cubePos, TYPE_AIR);
-		new DefaultTerrainChangeListener().notifyTerrainChanged((int) cubePos.getX(), 
-														(int) cubePos.getY(), 
-														(int) cubePos.getZ());
 		this.connections.changeSolidToPassable((int) cubePos.getX(), 
 												(int) cubePos.getY(), 
 												(int) cubePos.getZ());
+		this.getTerrainChangeListener().notifyTerrainChanged((int) cubePos.getX(), 
+				(int) cubePos.getY(), 
+				(int) cubePos.getZ());
 				
 		double prob = 0.25;
 		boolean spawn = (new Random().nextDouble() <= prob);

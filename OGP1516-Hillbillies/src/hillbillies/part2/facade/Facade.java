@@ -283,8 +283,7 @@ public class Facade implements IFacade {
 	@Override
 	public void workAt(Unit unit, int x, int y, int z) throws ModelException {
 		Vector3d pos = new Vector3d(x , y , z);
-		unit.workAt(pos);
-		
+		unit.workAt(pos);		
 	}
 
 	@Override
