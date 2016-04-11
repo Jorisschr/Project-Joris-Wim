@@ -1,5 +1,6 @@
 package hillbillies.model;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -126,6 +127,7 @@ public class Unit {
 		this.carries = null;
 		this.world = null;
 		this.target = new Vector3d();
+		this.queue = new ArrayList<Vector3d>();
 	}
 
 	/**
@@ -256,6 +258,7 @@ public class Unit {
 	private GameObject carries;
 	private World world;
 	private Vector3d target;
+	private ArrayList<Vector3d> queue;
 	
 	/**
 	 * Variable registering this units faction.
@@ -642,6 +645,18 @@ public class Unit {
 		this.target = vector;
 	}
 	
+	public ArrayList<Vector3d> getQueue() {
+		return this.queue;
+	}
+	
+	public void resetQueue() {
+		this.queue = new ArrayList<Vector3d>();
+	}
+	
+	public void addToQueue(Vector3d cube) {
+		this.getQueue().add(cube);
+	}
+	
 	
 	/////////////////////////////
 	///	HITPOINTS AND STAMINA ///
@@ -873,9 +888,32 @@ public class Unit {
 		}
 		this.moveToAdjacent(new Vector3d(nextPos[0], nextPos[1], nextPos[2]));
 	}
+	
+	public ArrayList<Vector3d> getSuitableCubes(Vector3d c) {
+		ArrayList<Vector3d> l = c.createAdjacentVectors();
+		World w = this.getWorld();
+		
+		for (Vector3d cube: l) {
+			int[] a = cube.getIntArray();
+			if ((cube.equals(c)) || (!w.isPassable(a[0], a[1], a[2])) 
+					|| (!w.isSolidConnectedToBorder(a[0], a[1], a[2] - 1))) {
+				l.remove(cube);
+			}
+		}
+		return l;
+	}
+	
+	//TODO: finish this function and movement as a whole.
+	public void search(Vector3d c0, int n) {
+		ArrayList<Vector3d> l = getSuitableCubes(c0);
+		for (Vector3d c: l) {
+
+		}
+		
+	}
 
 	/**
-	 * Initiate movement to a game world cube adjacent to the unit's current
+	 * Initiate movement to a game world cube adjacent to the units current
 	 * location.
 	 * 
 	 * @param   vector

@@ -1,5 +1,6 @@
 package helperclasses;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Vector3d {
@@ -364,7 +365,6 @@ public class Vector3d {
 	 *         upper bound. | result == (for (int i = 0; i < position.length;) |
 	 *         ((position[i] > LOWER_BOUND) && | (position[i] < UPPER_BOUND)))
 	 */
-
 	public boolean isValidPosition() {
 		
 		for (int i = 0; i <= 2; i++) {
@@ -388,5 +388,23 @@ public class Vector3d {
 			rounded.setDimension(i, (int) this.getDimension(i));
 		}		
 		return rounded;
+	}
+	
+	
+	public boolean isAdjacentTo(Vector3d vector) {
+		return this.subtract(vector).calcNorm() <= Math.sqrt(3);
+	}
+	
+	public ArrayList<Vector3d> createAdjacentVectors() {
+		ArrayList<Vector3d> l = new ArrayList<Vector3d>();
+		
+		for (int x = - 1; x < 2; x++) {
+			for (int y = -1; y < 2; y++) {
+				for (int z= -1; z <2; z++) {
+					l.add(new Vector3d(this.getX() + x, this.getY() + y, this.getZ() + z));
+				}
+			}
+		}					
+		return l;
 	}
 }
